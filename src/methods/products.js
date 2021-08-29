@@ -8,7 +8,7 @@ let products = {
     /**
      * Ruta que muestra todos los empleados
      * 
-     * @returnsproducts
+     * @returns products
      */
      'index-products': async function() {
 
@@ -27,11 +27,12 @@ let products = {
 
         try {
 
+            if(params.stock < 0) throw new Error('La existencia debe ser mayor a 0');
+
             await Product.create({
-                department_id: params.department_id,
-                brand: params.brand,
-                model: params.model,
-                stock: params.stock
+                name: params.name,
+                stock: params.stock,
+                tax_id: params.tax_id,
             });
     
             return {message: "Agregado con exito", code: 1};
@@ -75,10 +76,10 @@ let products = {
         try {
 
             // valido que hayan llegado bien los datos
-            if(empty(params.department_id)) throw new Error("El departamento es Obligatorio");
-            if(empty(params.brand)) throw new Error("La marca es Obligatoria");
-            if(empty(params.model)) throw new Error("El modelo es Obligatorio");
-            if(empty(params.stock)) throw new Error("La existencia es Obligatoria");
+            if(empty(params.name)) throw new Error("El nombre del producto es obligatorio");
+            if(empty(params.stock)) throw new Error("La existencia del producto es obligatoria");
+            if(empty(params.tax_id)) throw new Error("El impuesto del producto es Obligatorio");
+            if(params.stock < 0) throw new Error("La existencia debe ser mayor a 0");
 
             // busco los datos del del empleado
             let product = await Product.findByPk(params.id);
@@ -89,10 +90,9 @@ let products = {
             }
 
             // actualizo la informacion
-            product.department_id = params.department_id;
-            product.brand = params.brand;
-            product.model = params.model;
+            product.name = params.name;
             product.stock = params.stock;
+            product.tax_id = params.tax_id;
 
             product.save();
 
