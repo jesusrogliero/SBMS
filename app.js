@@ -14,6 +14,8 @@ const main = function () {
     },
   });
 
+  win.setMenuBarVisibility(false)
+
   win.loadFile(dirs.public + 'index.html');
 
   // cargando el listo de archivos
