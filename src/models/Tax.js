@@ -1,7 +1,7 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
-const Taxes = sequelize.define("products", {
+const Taxes = sequelize.define("taxes", {
     id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,

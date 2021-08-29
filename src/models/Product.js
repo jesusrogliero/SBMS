@@ -22,7 +22,7 @@ const Products = sequelize.define("products", {
         }
     },
     stock: {
-        type: DataTypes.TEXT,
+        type: DataTypes.NUMBER,
         allowNull: false,
         validate: {
             notNull: {
