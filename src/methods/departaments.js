@@ -1,16 +1,16 @@
-'use_strict'
+'use strict'
 
 const Department = require('../models/Department.js');
 const empty = require('../helpers/empty.js');
 
-let DepartmentsController = {
+const department = {
 
     /**
      * Ruta que muestra todos los departamentos
      * 
      * @returns departments
      */
-    index: async function() {
+	 'index-department': async function() {
         try {
             return await Department.findAll({raw:true});
         } catch (error) {
@@ -25,7 +25,7 @@ let DepartmentsController = {
      * @param {Json} params 
      * @returns message
      */
-    create: async function(params) {
+    'create-department': async function(params) {
         try {
             await Department.create({name: params.name});
             return {message: "Agregado con exito", code: 1};
@@ -41,9 +41,9 @@ let DepartmentsController = {
      * @param {int} id 
      * @returns {json} department
      */
-    show: async function(params) {
+    'show-department': async function(id) {
         try {
-            let departament = await Department.findByPk(params.id, {raw: true});
+            let departament = await Department.findByPk(id, {raw: true});
 
             if(departament === null) throw new Error("Este departamento no existe");
 
@@ -61,7 +61,7 @@ let DepartmentsController = {
      * @param {*} params 
      * @returns message
      */
-    update: async function(params) {
+    'update-department': async function(params) {
         try {
             if( empty(params.name) ) throw new Error("El nombre del departamento es obligatorio");
 
@@ -87,9 +87,9 @@ let DepartmentsController = {
      * @param {*} params 
      * @returns message
      */
-    destroy: async function(params) {
+    'destroy-department': async function(id) {
         try {
-            let departament = await Department.findByPk(params.id);
+            let departament = await Department.findByPk(id);
 
             if(departament === null) throw new Error("Este departamento no existe");
 
@@ -103,4 +103,4 @@ let DepartmentsController = {
     }
 };
 
-module.exports = DepartmentsController;
+module.exports = department;

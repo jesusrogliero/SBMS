@@ -14,4 +14,4 @@ const ReasonsVisits = sequelize.define("reasons_visits", {
 });
 
 
-module.exports = Department;
+module.exports = ReasonsVisits;

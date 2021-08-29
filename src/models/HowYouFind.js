@@ -14,4 +14,4 @@ const HowYouFind = sequelize.define("how_you_find", {
 });
 
 
-module.exports = Department;
+module.exports = HowYouFind;

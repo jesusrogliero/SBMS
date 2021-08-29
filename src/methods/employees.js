@@ -5,14 +5,14 @@ const empty = require('../helpers/empty.js');
 
 
 
-const EmployeesController = {
+const Employees = {
 
     /**
      * Ruta que muestra todos los empleados
      * 
      * @returns employees
      */
-    index: async function() {
+    'index-employees': async function() {
 
         return await Employee.findAll({raw:true});
 
@@ -25,7 +25,7 @@ const EmployeesController = {
      * @param {Json} params 
      * @returns message
      */
-    create: async function(params) {
+    'create-employee': async function(params) {
 
         try {
 
@@ -50,7 +50,7 @@ const EmployeesController = {
      * @param {int} id 
      * @returns {json} employee
      */
-    show: async function(id) {
+    'show-employee': async function(id) {
         try {
             const employee = await Employee.findByPk(id, {raw: true});
 
@@ -71,7 +71,7 @@ const EmployeesController = {
      * @param {*} params 
      * @returns 
      */
-    update: async function(params) {
+    'update-employee': async function(params) {
 
         try {
 
@@ -111,7 +111,7 @@ const EmployeesController = {
      * @param {*} params 
      * @returns 
      */
-    destroy: async function destroy(id) {
+    'destroy-employee': async function destroy(id) {
         try {
             let employee = await employee.findByPk(id);
 
@@ -127,6 +127,6 @@ const EmployeesController = {
         }
     }
 
-}
+};
 
-module.exports = EmployeesController;
+module.exports = Employees;

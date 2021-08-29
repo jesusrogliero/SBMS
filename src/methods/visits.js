@@ -4,20 +4,19 @@ const Visit = require('../models/Visit.js');
 const empty = require('../helpers/empty.js');
 
 
-
-const VisitsController = {
+const Visits = {
 
     /**
      * Ruta que muestra las visitas de un cliente
      * 
      * @returns employees
      */
-    index: async function(params) {
+    'index-visits': async function(id) {
         try {
 
-            if(empty(params.id)) throw new Error("Debe especificar un cliente");
+            if(empty(id)) throw new Error("Debe especificar un cliente");
 
-            return await Visit.findAll({where: {id:params.id}, raw:true});
+            return await Visit.findAll({where: {id:id}, raw:true});
             
         } catch (error) {
             return {message: error.message, code: 1};
@@ -31,7 +30,7 @@ const VisitsController = {
      * @param {Json} params 
      * @returns message
      */
-    create: async function(params) {
+    'create-visit': async function(params) {
 
         try {
 
@@ -57,7 +56,7 @@ const VisitsController = {
      * @param {int} id 
      * @returns {json} visit
      */
-    show: async function(id) {
+    'show-visit': async function(id) {
         try {
             const visit = await Visit.findByPk(id, {raw: true});
 
@@ -76,7 +75,7 @@ const VisitsController = {
      * @param {*} params 
      * @returns message
      */
-    update: async function(params) {
+    'update-visit': async function(params) {
         try {
             return { message: "Actualizado correctamente", code: 1 };
         } catch (error) {
@@ -91,7 +90,7 @@ const VisitsController = {
      * @param {*} params 
      * @returns message
      */
-    destroy: async function destroy(id) {
+    'destroy-visit': async function destroy(id) {
         try {
 
             let visit = await Visit.findByPk(id);
@@ -110,4 +109,4 @@ const VisitsController = {
 
 }
 
-module.exports = VisitsController;
+module.exports = Visits;
