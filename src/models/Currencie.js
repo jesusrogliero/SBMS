@@ -1,7 +1,7 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
-const Products = sequelize.define("products", {
+const Currencie = sequelize.define("Currencies", {
     id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,
@@ -13,51 +13,47 @@ const Products = sequelize.define("products", {
         validate: {            
             notNull: {
                 args: true,
-                msg: "Debes ingresar el nombre del producto"
+                msg: "Debes ingresar el nombre de la moneda"
             },
             notEmpty: {
                 args: true,
-                msg: "El nombre del producto no es valido"
+                msg: "El nombre de la moneda no es valido"
             }
         }
     },
-    stock: {
+    symbol: {
         type: DataTypes.TEXT,
         allowNull: false,
         validate: {
             notNull: {
                 args: true,
-                msg: "Debes ingresar la existencia del producto"
+                msg: "Debes ingresar el simbolo de la moneda"
             },
             notEmpty: {
                 args: true,
-                msg: "Debes ingresar una existencia de producto correcta"
+                msg: "Debes ingresar el simbolo de la moneda"
             }
         }
     },
-    tax_id: {
+    exchange_rate: {
         type: DataTypes.NUMBER,
         allowNull: false,
-        references: {
-            model: "taxes",
-            key: "id"
-        },
         validate: {
             isNumeric: {
                 args: true,
-                msg: "Ingrese un impuesto correcto"
+                msg: "Ingrese una tasa de cambio correcta"
             },
             notEmpty: {
                 args: true,
-                msg: "El impuesto es obligatorio"
+                msg: "La tasa de cambio es obligatoria"
             },
             notNull: {
                 args: true,
-                msg: "El impuesto es obligatorio"
+                msg: "La tasa de cambio es obligatoria"
             }
         }
     }
 });
 
 
-module.exports = Products;
+module.exports = Currencie;

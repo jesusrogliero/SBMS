@@ -35,67 +35,25 @@ const Client = sequelize.define("clients", {
             }
         }
     },
-    email: {
-        type: DataTypes.TEXT,
-        allowNull:true,
+    cedula: {
+        type: DataTypes.NUMBER,
+        allowNull: false,
         unique: true,
         validate: {
-            isEmail: {
-                args: true,
-                msg: "El correo ingresado no es correcto"
-            },
-            isEmail: {
-                args: true,
-                msg: "Debes ingresar un correo electronico valido"
-            }
-        }
-    },
-    date_birth: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        validate: {
-            isDate: {
-                args: true,
-                msg: "La fecha de nacimiento no es valida"
-            }
-        }
-    },
-    phone: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
-    address: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-            notEmpty: {
-                args: true,
-                msg: "La direccion no es valida"
-            },
             notNull: {
                 args: true,
-                msg: "Debes ingresar la direccion del cliente"
+                msg: "La cedula de Identidad es obligatoria"
             },
-        }
-    },
-    how_you_find_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: "how_you_finds",
-            key:"id"
-        },
-        validate: {
             notEmpty: {
                 args: true,
-                msg: "Debes ingresar como el cliente se entero de la empresa"
+                msg: "La cedula ingresada no es correcta"
             },
-            notNull: {
+            isNumeric: {
                 args: true,
-                msg: "Debe especificar como el cliente se entro de la empresa"
-            },
+                msg: "La cedula ingresada no es correcta"
+            }
         }
-    },
+    }
 });
 
 
