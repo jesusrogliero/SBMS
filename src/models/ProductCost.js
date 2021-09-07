@@ -56,7 +56,7 @@ const ProductCost = sequelize.define("products_costs", {
         }
     },
 
-    price: {
+    cost: {
         type: DataTypes.DECIMAL,
         allowNull: false,
     },
