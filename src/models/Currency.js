@@ -1,7 +1,7 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
-const Currencie = sequelize.define("Currencies", {
+const Currency = sequelize.define("Currencies", {
     id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,
@@ -56,4 +56,4 @@ const Currencie = sequelize.define("Currencies", {
 });
 
 
-module.exports = Currencie;
+module.exports = Currency;
