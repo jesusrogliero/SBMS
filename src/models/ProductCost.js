@@ -1,7 +1,7 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
-const ProductPrice = sequelize.define("products_prices", {
+const ProductCost = sequelize.define("products_costs", {
     id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,
@@ -63,4 +63,4 @@ const ProductPrice = sequelize.define("products_prices", {
 });
 
 
-module.exports = ProductPrice;
+module.exports = ProductCost;
