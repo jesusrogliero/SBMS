@@ -91,4 +91,4 @@ const PurchaseOrder = sequelize.define("purchase_orders", {
 });
 
 
-module.exports = Currency;
+module.exports = PurchaseOrder;
