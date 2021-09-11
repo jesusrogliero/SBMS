@@ -96,6 +96,17 @@ const PurchaseOrderItem = sequelize.define("purchase_orders_items", {
         defaultValue: 0
     },
 
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    }
+
 });
 
 

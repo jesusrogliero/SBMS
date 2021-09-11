@@ -58,6 +58,16 @@ const Inventory = sequelize.define("inventories", {
             }
         }
     },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    }
 });
 
 

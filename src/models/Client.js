@@ -53,6 +53,14 @@ const Client = sequelize.define("clients", {
                 msg: "La cedula ingresada no es correcta"
             }
         }
+    },
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
     }
 });
 

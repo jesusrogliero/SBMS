@@ -50,6 +50,16 @@ const ProductPrice = sequelize.define("products_prices", {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: 0,
+    },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
     }
 
 });

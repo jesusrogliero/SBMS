@@ -60,6 +60,16 @@ const ProductCost = sequelize.define("products_costs", {
         type: DataTypes.DECIMAL,
         allowNull: false,
     },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    }
 });
 
 

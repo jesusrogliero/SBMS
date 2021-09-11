@@ -11,6 +11,16 @@ const PurchaseOrderState = sequelize.define("purchase_orders_state", {
         type: DataTypes.TEXT,
         allowNull: false,
     },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    }
 });
 
 

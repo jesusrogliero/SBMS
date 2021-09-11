@@ -52,6 +52,14 @@ const Currency = sequelize.define("Currencies", {
                 msg: "La tasa de cambio es obligatoria"
             }
         }
+    },
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
     }
 });
 

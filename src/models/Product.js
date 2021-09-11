@@ -56,6 +56,16 @@ const Products = sequelize.define("products", {
                 msg: "El impuesto es obligatorio"
             }
         }
+    },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
     }
 });
 
