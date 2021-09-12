@@ -39,6 +39,16 @@ const Taxes = sequelize.define("taxes", {
             }
         }
     },
+
+    createdAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    
+    updatedAt: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    }
 });
 
 
