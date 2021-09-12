@@ -10,7 +10,7 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 
-  <title>Mary System</title>
+  <title>Systema Administrativo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
@@ -25,111 +25,20 @@
         :active = "alert"
       ></snackbar-app>
     
-        <!-- INCIO DEL TOOLBAR -->
-        <v-app-bar
-          fixed
-          elevate-on-scroll
-          color="blue-grey lighten-4"
-          scroll-target="#scrolling-techniques-7"
-        >
-          <v-app-bar-nav-icon  @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <navigation></navigation>
 
-          <v-spacer></v-spacer>
-    
-          <v-toolbar-title class="font-weight-medium text-h5">Administrador</v-toolbar-title>
-    
-        </v-app-bar>
-    
-        <!-- FIN DEL TOOLBAR -->
-    
-        <!-- INICION DEL MENU LATERAL -->
-        <v-navigation-drawer
-            v-model="drawer"
-            absolute
-            left
-            color="grey lighten-3"
-            temporary
-          >
-            <v-list
-              nav
-              dense
-            >
-              <v-list-item-group
-                v-model="group"
-                active-class="deep-purple--text text--accent-4"
-              >
-    
-              <v-list-item >
-                <v-list-item-avatar>
-                  <img src="https://randomuser.me/api/portraits/women/81.jpg">
-                </v-list-item-avatar>
-                <v-list-item-title color="primary">Jane Smith</v-list-item-title>
-    
-              </v-list-item>
-              
-              <v-divider></v-divider>
-    
-                <v-list-item class="mt-1">
-                  <v-icon class="mr-2">mdi-home</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toHome">Inicio</v-list-item-title>
-                </v-list-item>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-food-apple</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toProducts">Productos</v-list-item-title>
-                </v-list-item>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-history</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toHistory">Historial</v-list-item-title>
-                </v-list-item>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-cart</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toNotes">Pendientes</v-list-item-title>
-                </v-list-item>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-book</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toNotes">Notas</v-list-item-title>
-                </v-list-item>
-    
-                <v-divider></v-divider>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-dots-horizontal-circle</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toConfig">Configuración</v-list-item-title>
-                </v-list-item>
-    
-                <v-list-item class="mt-2">
-                  <v-icon class="mr-2">mdi-logout-variant</v-icon>
-                  <v-list-item-title class="subtitle-1"  v-on:click="toConfig">Cerrar Sesión</v-list-item-title>
-                </v-list-item>
-              </v-list-item-group>
-            </v-list>
-          </v-navigation-drawer>
-    
-          <!-- FIN DEL MENU LATERAL -->
-        
-        
-        <!-- INICIO DEL PANEL PRINCIPAL -->
-        <v-sheet
-          id="scrolling-techniques-7"
-          class="overflow-y-auto"
-          max-height="800"
-        >
-    
-          <v-main id="inicio" class="mt-15 mb-15">
-            <transition>
-              <keep-alive>
-                <router-view/>
-              </keep-alive>
-            </transition>
-          </v-main>
-    
-        </v-sheet>
-        <!-- FIN DEL PANEL PRINCIPAL -->  
-    
+      <v-main>
+        <v-container fluid>
+
+          <transition>
+            <keep-alive>
+              <router-view/>
+            </keep-alive>
+          </transition>
+
+        </v-container>
+      </v-main>
+
       </v-app>
   </div>
 
@@ -138,6 +47,7 @@
     window.execute = execute;
   </script>
   <script type="module" src="./main.js"></script>
+
   
   <script>
     // funcion que activa la alerta
