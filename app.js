@@ -6,8 +6,8 @@ const dirs = require('./dirs');
 const main = function () {
   // cargando ventana
   const win = new BrowserWindow({
-    width: 800,
-    height: 800,
+    width: 1024,
+    height: 780,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
