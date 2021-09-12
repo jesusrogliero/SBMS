@@ -1,6 +1,7 @@
 'use strict'
 
 const Client = require('../models/Client.js');
+const empty = require('../helpers/empty.js');
 
 const clients = {
 
@@ -34,6 +35,7 @@ const clients = {
                 lastname: params.lastname,
                 cedula: params.cedula
             });
+
 
             return {message: "Agregado con exito", code: 1};
         } catch (error) {
