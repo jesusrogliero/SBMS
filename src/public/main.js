@@ -2,6 +2,7 @@
 
 import routes from './routes.js'; 
 import Snapback from "./utils/SnackbarApp.js";
+import navigation from './components/navigation.js';
 const router = new VueRouter({ routes: routes });
 
 let vue = new Vue({
@@ -30,8 +31,7 @@ let vue = new Vue({
       colorAlert: "",
       iconAlert: null,
       timeAlert: null,
-      drawer: false,
-      group: null,
+      
     }
   },
 
@@ -44,39 +44,8 @@ let vue = new Vue({
       this.textAlert = params.text != null ? params.text : "";
       this.iconAlert = params.icon;
     },
-
-    toHome: function() {
-      console.log('toHome');
-      this.$router.push('/');
-    },
-    
-    toProducts: function() {
-      console.log('toProducts');
-      this.$router.push('/products');
-    },
-    
-    toConfig: function() {
-      console.log('toConfig');
-    },
-
-    toHistory: function() {
-      console.log('toHistory');
-      this.$router.push('/histories');
-    },
-
-    toNotes: function() {
-      console.log('toNotes');
-      this.$router.push('/notes');
-    },
   },
   
-  watch: {
-    group () {
-      this.drawer = false
-    },
-},
-
-
 });
 
 window.appInstance = vue;
