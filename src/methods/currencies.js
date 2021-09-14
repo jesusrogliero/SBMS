@@ -1,6 +1,7 @@
 'use strict'
 
 const Currency = require('../models/Currency.js');
+const empty = require('../helpers/empty.js');
 
 const currencies = {
 
@@ -72,11 +73,14 @@ const currencies = {
 
 		try {
 
-			if( empty(params.name) ) throw new Error("El nombre de la moneda es obligatorio");
-			if( empty(params.symbol) ) throw new Error("El simbolo de la moneda es obligatorio");
-			if( empty(params.exchange_rate) ) throw new Error("La tasa de cambio de la moneda es obligatoria");
+			if( empty(params.name) ) throw new Error("El nombre es obligatorio");
+			if( empty(params.symbol) ) throw new Error("El simbolo es obligatorio");
+			if( empty(params.exchange_rate) ) throw new Error("La tasa de cambio es obligatoria");
 
 			let currency = await Currency.findByPk(params.id);
+
+			if( currency.exchange_rate === 1 && params.exchange_rate != 1)
+				throw new Error("No es posible actualizar la tasa de cambio de la moneda predeterminada");
 			
 			if( currency === null) throw new Error("Esta moneda no existe");
 
@@ -86,7 +90,7 @@ const currencies = {
 
 			await currency.save();
 
-			return {message: "Actualizado con correctamente", code: 1};
+			return {message: "Actualizado Correctamente", code: 1};
 			
 		} catch (error) {
 			return { message: error.message, code: 0 };
@@ -104,6 +108,9 @@ const currencies = {
 	'destroy-currency': async function(id) {
 		try {
 			let currency = await Currency.findByPk(id);
+
+			if(currency.exchange_rate === 1)
+				throw new Error("No es posible eliminar la moneda predeterminada");
 
 			if(currency === null) throw new Error("Esta moneda no existe");
 
