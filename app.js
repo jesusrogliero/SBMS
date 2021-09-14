@@ -6,8 +6,10 @@ const dirs = require('./dirs');
 const main = function () {
   // cargando ventana
   const win = new BrowserWindow({
-    width: 1024,
-    height: 780,
+    width: 1100,
+    height: 800,
+    minWidth: 1100,
+    minHeight: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -15,8 +17,9 @@ const main = function () {
   });
 
   win.setMenuBarVisibility(false)
-
+  win.setIcon('icon.png');
   win.loadFile(dirs.public + 'index.html');
+
 
   // cargando el listo de archivos
   const fs = require('fs');
