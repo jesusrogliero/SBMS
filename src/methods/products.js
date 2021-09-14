@@ -2,17 +2,32 @@
 
 const empty = require('../helpers/empty.js');
 const Product = require('../models/Product.js');
+const Tax = require('../models/Tax.js');
+const sequelize = require('sequelize');
 
 let products = {
 
     /**
      * Ruta que muestra todos los empleados
      * 
-     * @returns products
+     * @returns productsa
      */
      'index-products': async function() {
 
-        return await Product.findAll({raw:true});
+        //return await Product.findAll({raw:true});
+
+        return await Product.findAll({
+            attributes: {
+                include: [
+                    [sequelize.col('tax.percentage'), 'percentage']
+                ],
+            },
+            include: {
+                model: Tax,
+                required: true
+            },
+            raw:true
+        });
 
     },
 
@@ -32,7 +47,7 @@ let products = {
             await Product.create({
                 name: params.name,
                 stock: params.stock,
-                tax_id: params.tax_id,
+                taxId: params.taxId,
             });
     
             return {message: "Agregado con exito", code: 1};
@@ -74,11 +89,11 @@ let products = {
     'update-product': async function(params) {
 
         try {
-
+            
             // valido que hayan llegado bien los datos
             if(empty(params.name)) throw new Error("El nombre del producto es obligatorio");
             if(empty(params.stock)) throw new Error("La existencia del producto es obligatoria");
-            if(empty(params.tax_id)) throw new Error("El impuesto del producto es Obligatorio");
+            if(empty(params.taxId)) throw new Error("El impuesto del producto es Obligatorio");
             if(params.stock < 0) throw new Error("La existencia debe ser mayor a 0");
 
             // busco los datos del del empleado
@@ -92,7 +107,7 @@ let products = {
             // actualizo la informacion
             product.name = params.name;
             product.stock = params.stock;
-            product.tax_id = params.tax_id;
+            product.taxId = params.taxId;
 
             product.save();
 
