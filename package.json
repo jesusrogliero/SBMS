@@ -1,12 +1,12 @@
 {
   "name": "many-electron",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sistema administrativo",
   "main": "app.js",
   "scripts": {
     "start": "electron ."
   },
-  "author": "",
+  "author": "Jesus Rogliero",
   "license": "ISC",
   "devDependencies": {
     "electron": "^13.1.8",
