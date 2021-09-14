@@ -1,5 +1,6 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
+const Tax = require('./Tax.js');
 
 const Products = sequelize.define("products", {
     id: {
@@ -35,7 +36,7 @@ const Products = sequelize.define("products", {
             }
         }
     },
-    tax_id: {
+    taxId: {
         type: DataTypes.NUMBER,
         allowNull: false,
         references: {
@@ -68,6 +69,8 @@ const Products = sequelize.define("products", {
         allowNull: false
     }
 });
+
+Products.belongsTo(Tax);
 
 
 module.exports = Products;
