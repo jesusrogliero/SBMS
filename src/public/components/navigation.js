@@ -5,9 +5,24 @@ let navigation = Vue.component('navigation', {
 
     data: function() {
         return {
-
-
         }
+    },
+
+    methods: {
+
+
+        toHome: function() { this.$router.push('/'); },
+
+        toTaxes: function() { this.$router.push('/taxes'); },
+
+        toClients: function() { this.$router.push('/clients'); },
+
+        toCurrencies: function() { this.$router.push('/currencies'); },
+
+        toProducts: function() { this.$router.push('/products'); },
+
+        toPrices: function() { this.$router.push('/prices')}
+
     },
 
 
@@ -37,7 +52,7 @@ let navigation = Vue.component('navigation', {
         <v-icon color="#8e97a5">mdi-home</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toHome">
         <v-list-item-title class="text-body-1" style="color: white;">Home</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
@@ -49,7 +64,7 @@ let navigation = Vue.component('navigation', {
           <v-icon color="#8e97a5">mdi-calculator</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toTaxes">
           <v-list-item-title class="text-body-1" style="color: white;">Impuestos</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
@@ -66,10 +81,20 @@ let navigation = Vue.component('navigation', {
 
     <v-list-item link>
         <v-list-item-icon>
+            <v-icon color="#8e97a5">mdi-cash-multiple</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content @click="toPrices">
+            <v-list-item-title class="text-body-1" style="color: white;">Precios</v-list-item-title>
+        </v-list-item-content>
+    </v-list-item>
+
+    <v-list-item link>
+        <v-list-item-icon>
             <v-icon color="#8e97a5">mdi-currency-usd</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toCurrencies">
             <v-list-item-title class="text-body-1" style="color: white;">Monedas</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
@@ -81,7 +106,7 @@ let navigation = Vue.component('navigation', {
             <v-icon color="#8e97a5">mdi-food-variant</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toProducts">
             <v-list-item-title class="text-body-1" style="color: white;">Productos</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
@@ -93,7 +118,7 @@ let navigation = Vue.component('navigation', {
             <v-icon color="#8e97a5">mdi-account</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toClients">
             <v-list-item-title class="text-body-1" style="color: white;">Clientes</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
