@@ -22,7 +22,6 @@
         :color = "colorAlert"
         :text = "textAlert"
         :icon = "iconAlert"
-        :active = "alert"
       ></snackbar-app>
     
       <navigation></navigation>
@@ -30,11 +29,11 @@
       <v-main>
         <v-container fluid>
 
-          <transition>
+        <v-scroll-x-reverse-transition>
             <keep-alive>
               <router-view/>
             </keep-alive>
-          </transition>
+        </v-scroll-x-reverse-transition>
 
         </v-container>
       </v-main>
