@@ -12,7 +12,12 @@ let Taxes = {
      */
      'index-taxes': async function() {
 
-        return await Tax.findAll({raw:true});
+        return await Tax.findAll({
+            attributes: { 
+                include: [ Tax.sequelize.literal("(percentage*100) || '%' AS percentage") ]
+            },
+            raw: true
+        });
 
     },
 
@@ -27,17 +32,21 @@ let Taxes = {
 
         try {
 
-            if(params.percentage < 0) throw new Error('El porcentaje debe ser mayor a 0');
+            if(params.percentage < 0) throw new Error('El porcentaje ingresado no es correcto');
 
             await Tax.create({
                 name: params.name,
-                parcentage: params.parcentage,
+                percentage: params.percentage /100,
             });
     
             return {message: "Agregado con exito", code: 1};
         
         } catch (error) {
-            return {message: error.message, code: 0};
+            console.log(error.errors);
+            if( !empty( error.errors ) )
+                return {message: error.errors[0].message, code: 0};
+            else
+                return { message: error.message, code: 0 };
         }
 
     },
@@ -53,7 +62,7 @@ let Taxes = {
         try {
             const tax = await Tax.findByPk(id, {raw: true});
 
-            if(tax === null) throw new Error("Este impusto no existe");
+            if(tax === null) throw new Error("Este impuesto no existe");
 
             return tax;
 
@@ -76,8 +85,8 @@ let Taxes = {
 
             // valido que hayan llegado bien los datos
             if(empty(params.name)) throw new Error("El nombre del impuesto es obligatorio");
-            if(empty(params.percentage)) throw new Error("La orcentaje es obligatorio");
-            if(params.percentage < 0) throw new Error("El porcentaje debe ser mayor a 0");
+            if(empty(params.percentage)) throw new Error("La porcentaje es obligatorio");
+            if(params.percentage <= 0) throw new Error("El porcentaje debe ser mayor a 0");
 
             let tax = await Tax.findByPk(params.id);
 
@@ -88,13 +97,14 @@ let Taxes = {
 
             // actualizo la informacion
             tax.name = params.name;
-            tax.percentage = params.percentage;
+            tax.percentage = params.percentage /100;
 
-            product.save();
+            tax.save();
 
             return { message: "Actualizado Correctamente", code: 1 };
 
         } catch (error) {
+
             return { message: error.message, code: 0 };
         }
 
@@ -116,7 +126,7 @@ let Taxes = {
             
             tax.destroy();
 
-            return { message: error.message, code: 1 };
+            return { message: "Eliminado Correctamente", code: 1 };
 
         } catch (error) {
             return { message: error.message, code: 0 };
