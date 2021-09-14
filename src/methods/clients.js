@@ -29,6 +29,11 @@ const clients = {
 	 'create-client': async function(params) {
         try {
 
+			const client = await Client.findOne({ where: { cedula: params.cedula } });
+
+			if(!empty(client))
+				throw new Error("Este cliente ya esta registrado");
+
             // creo un nuevo cliente
             const new_client =  await Client.create({
                 name: params.name,
@@ -88,7 +93,7 @@ const clients = {
 
 			await client.save();
 
-			return {message: "Actualizado con correctamente", code: 1};
+			return {message: "Actualizado Correctamente", code: 1};
 			
 		} catch (error) {
 			return { message: error.message, code: 0 };
