@@ -42,7 +42,6 @@ let Taxes = {
             return {message: "Agregado con exito", code: 1};
         
         } catch (error) {
-            console.log(error.errors);
             if( !empty( error.errors ) )
                 return {message: error.errors[0].message, code: 0};
             else
