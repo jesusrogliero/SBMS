@@ -21,7 +21,12 @@ let navigation = Vue.component('navigation', {
 
         toProducts: function() { this.$router.push('/products'); },
 
-        toPrices: function() { this.$router.push('/prices')}
+        toPrices: function() { this.$router.push('/prices')},
+
+        toPurchases: function() { this.$router.push('/purchases_orders')},
+
+        toProviders: function() { this.$router.push('/providers')}
+
 
     },
 
@@ -29,7 +34,7 @@ let navigation = Vue.component('navigation', {
 	template: `
     <v-navigation-drawer 
         app 
-        permanent 
+        permanent
         color="#263043"
     >
 
@@ -58,6 +63,7 @@ let navigation = Vue.component('navigation', {
     </v-list-item>
 
     <v-subheader class="mt-2" style="font-size: medium; color:#8e97a5;">Finanzas</v-subheader>
+    
      
     <v-list-item link>
         <v-list-item-icon>
@@ -129,11 +135,10 @@ let navigation = Vue.component('navigation', {
             <v-icon color="#8e97a5">mdi-account-multiple</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toProviders">
             <v-list-item-title class="text-body-1" style="color: white;">Provedores</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
-
 
     <v-subheader class="mt-4" style="font-size: medium; color:#8e97a5;" >Ingresos y Facturas</v-subheader>
 
@@ -142,7 +147,7 @@ let navigation = Vue.component('navigation', {
             <v-icon class="" color="#8e97a5">mdi-cart-outline</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toPurchases" >
             <v-list-item-title class="text-body-1" style="color: white;">Compras</v-list-item-title>
         </v-list-item-content>
     </v-list-item>

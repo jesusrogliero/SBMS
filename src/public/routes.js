@@ -7,6 +7,8 @@ let routes = [
     {path: "/currencies", component: () => import("./components/currencies.js") },
     {path: "/products", component: () => import("./components/products.js") },
     {path: "/prices", component: () => import("./components/prices.js") },
+    {path: "/purchases_orders", component: () => import("./components/purchasesOrders.js") },
+    {path: "/providers", component: () => import("./components/providers.js") },
 
 ];
 
