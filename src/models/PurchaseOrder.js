@@ -1,5 +1,8 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
+const Provider = require("./Provider.js");
+const Currency = require("./Currency.js");
+const PurchaseOrderState = require("./PurchaseOrderState.js");
 
 const PurchaseOrder = sequelize.define("purchase_orders", {
    
@@ -15,23 +18,8 @@ const PurchaseOrder = sequelize.define("purchase_orders", {
         defaultValue: 1
     },
 
-    observation: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-        validate: {
-            notNull: {
-                args: true,
-                msg: "Debes ingresar una observación"
-            },
-            notEmpty: {
-                args: true,
-                msg: "Debes ingresar una observación"
-            }
-        }
-    },
-
     date: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
         validate: {
             isDate: {
@@ -48,6 +36,10 @@ const PurchaseOrder = sequelize.define("purchase_orders", {
     provider_id: {
         type: DataTypes.NUMBER,
         allowNull: false,
+        references: {
+            model: "providers",
+            key: 'id'
+        },
         validate: {
             isNumeric: {
                 args: true,
@@ -69,10 +61,31 @@ const PurchaseOrder = sequelize.define("purchase_orders", {
         }
     },
 
+    observation: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notNull: {
+                args: true,
+                msg: "Debes ingresar una observación"
+            },
+            notEmpty: {
+                args: true,
+                msg: "Debes ingresar una observación"
+            }
+        }
+    },
+
     tax_amount: {
         type: DataTypes.DECIMAL,
         allowNull: false,
         defaultValue: 0,
+    },
+
+    total_products: {
+        type: DataTypes.NUMBER,
+        allowNull: false,
+        defaultValue:0
     },
 
     subtotal: {
@@ -100,5 +113,8 @@ const PurchaseOrder = sequelize.define("purchase_orders", {
 
 });
 
+PurchaseOrder.belongsTo(Currency, {foreignKey: 'currency_id'});
+PurchaseOrder.belongsTo(Provider, {foreignKey: 'provider_id'});
+PurchaseOrder.belongsTo(PurchaseOrderState, {foreignKey: 'state_id'});
 
 module.exports = PurchaseOrder;
