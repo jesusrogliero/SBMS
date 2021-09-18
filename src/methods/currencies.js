@@ -38,7 +38,10 @@ const currencies = {
 
             return {message: "Agregado con exito", code: 1};
         } catch (error) {
-            return { message: error.message, code:0 };
+			if( !empty( error.errors ) )
+				return {message: error.errors[0].message, code: 0};
+			else
+				return { message: error.message, code: 0 };
         }
     },
 
