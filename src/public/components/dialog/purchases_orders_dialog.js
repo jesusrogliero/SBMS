@@ -19,10 +19,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         sortable: false,
         value: 'id',
       },
-      { text: 'Producto', value: 'product_name' },
+      { text: 'Producto', value: 'product_name'},
       { text: 'Cantidad', value: 'quantity'},
-      { text: 'Precio', value: 'price'},
-      { text: 'Subtotal', value: 'subtotal' },
+      { text: 'Precio p/u', value: 'price'},
       { text: 'Impuesto', value: 'tax_amount' },
       { text: 'Subtotal', value: 'subtotal'},
       { text: 'Total', value: 'total'},
@@ -31,6 +30,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
       { text: 'Acciones', value: 'actions', sortable: false},
     ],
     purchases_items: [],
+    purchase: {},
+    currency: {},
+    provider: {},
     editedIndex: -1,
     editedItem: {},
   }),
@@ -61,13 +63,21 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
   methods: {
     initialize: async function () {
-        this.purchases = await execute('index-purchases_items', this.id);
-        this.pageCount =  Math.round ( Object.keys(this.purchases).length / 16);
+      
+        this.purchases_items = await execute('index-purchases_items', this.id);
+        this.pageCount =  Math.round ( Object.keys(this.purchases_items).length / 16);
+
+        this.purchase = await execute('show-purchase', this.id);
+
+        this.currency = await execute('show-currency', this.purchase.currency_id);
+
+        this.provider = await execute('show-provider', this.purchase.provider_id);
+
     },
 
     
     format: function(value) {
-        return formatMoney(value);
+        return `${formatMoney(value)} ${this.currency.symbol} `;
     },
 
     cleanForm: function() {
@@ -85,6 +95,32 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         this.editedItem.product_id = value;
     },
 
+    saveOrder: async function() {
+      let result = await execute('generate-purchase', this.id);
+
+      if(result.code == 1) {
+        alertApp({color:"success", text: result, icon: "check" }); 
+      }else{
+        alertApp({color:"error", text: result, icon: "alert" }); 
+      }
+
+      this.initialize();
+
+    },
+
+
+    approveOrder: async function() {
+      let result = await execute('approve-purchase', this.id);
+
+      if(result.code == 1) {
+        alertApp({color:"success", text: result, icon: "check" }); 
+      }else{
+        alertApp({color:"error", text: result, icon: "alert" }); 
+      }
+
+      this.initialize();
+
+    },
 
     editItem: async function(item) {
       this.editedIndex = item.id
@@ -105,7 +141,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     },
 
     deleteItemConfirm: async function() {
-      let result = await execute('destroy-purchase', this.editedIndex);
+      let result = await execute('destroy-purchase_item', this.editedIndex);
 
 
       if(result.code == 1) {
@@ -121,6 +157,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -136,6 +173,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
     save: async function() {
         let result = null;
+
         
         if (this.editedIndex > -1) {
           result = await execute('update-purchase_item', this.editedItem);
@@ -180,32 +218,122 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
             <v-btn
               dark
               text
-              @click="dialog = false"
+              v-show="purchase.state_id == 2"
+              @click="approveOrder"
             >
-              Aprobar
+            Aprobar
+            <v-icon>mdi-clipboard-check</v-icon>
             </v-btn>
 
             <v-btn
             dark
             text
-            @click="dialog = false"
-          >
-            Guardar
+            v-show="purchase.state_id == 1"
+            @click="saveOrder"
+            >
+          Generar 
+          <v-icon>mdi-content-save</v-icon>
           </v-btn>
 
-          <v-btn
-          dark
-          text
-          @click="dialog = false"
-        >
-          Confirmar
-        </v-btn>
           </v-toolbar-items>
         </v-toolbar>
 
 
+        <v-card class="m-n6">
+        <v-container>
+        <v-row>
+        
+        <v-col>
+        <v-card
+        elevation="2"
+        >
+          <v-card-title >Datos de la Orden</v-card-title>
 
-        <v-card >
+          <v-card-text>
+          
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Moneda:</v-col>
+          <v-col cols="6">{{currency.name + ' ' + currency.symbol}}</v-col>
+          </v-row>
+
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Estado:</v-col>
+          <v-col cols="6" v-if="purchase.state_id == 1">Pendiente</v-col>
+          <v-col cols="6" v-if="purchase.state_id == 2">Generada</v-col>
+          <v-col cols="6" v-else>Aprobada</v-col>
+          </v-row>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Cantidad de Productos:</v-col>
+          <v-col cols="6">{{purchase.total_products}}</v-col>
+          </v-row>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Observación</v-col>
+          <v-col cols="6">{{purchase.observation}}</v-col>
+          </v-row>
+
+          </v-card-text>
+        </v-card>
+        </v-col>
+
+        <v-col>
+        <v-card
+        elevation="2"
+        >
+          <v-card-title>Totalizacion</v-card-title>
+
+          <v-card-text>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Impuesto total:</v-col>
+          <v-col cols="6">{{format(purchase.tax_amount)}}</v-col>
+          </v-row>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >SubTotal:</v-col>
+          <v-col cols="6">{{format(purchase.subtotal)}}</v-col>
+          </v-row>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Total:</v-col>
+          <v-col cols="6">{{format(purchase.total)}}</v-col>
+          </v-row>
+
+          </v-card-text>
+          </v-card>
+        </v-col>
+
+
+        <v-col>
+        <v-card
+        elevation="2"
+        >
+          <v-card-title>Datos del Provedor</v-card-title>
+
+          <v-card-text>
+          
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Nombre:</v-col>
+          <v-col cols="6">{{provider.full_name}}</v-col>
+          </v-row>
+
+          <v-row>
+          <v-col cols="6" class="font-weight-black" >Telefono:</v-col>
+          <v-col cols="6">{{provider.phone}}</v-col>
+          </v-row>
+
+          </v-card-text>
+          </v-card>
+        </v-col>
+
+        
+        </v-row>
+      
+      </v-container>
+
+
         <v-data-table
         :headers="headers"
         :items="purchases_items"
@@ -219,7 +347,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     >
     <template v-slot:top>
         <v-toolbar flat >
-        <v-toolbar-title>Detalles De Orden de Ingreso</v-toolbar-title>
+        <v-toolbar-title>Productos en la Orden</v-toolbar-title>
         <v-divider
             class="mx-4"
             inset
@@ -354,12 +482,12 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     
     <template v-slot:item.actions="{ item }">
         <v-icon
-        dense
-        class="mr-2"
-        @click="openDialog(item)"
-        color="success"
+          dense
+          class="mr-2"
+          @click="editItem(item)"
+          color="primary"
         >
-            mdi-format-list-bulleted
+          mdi-pencil
         </v-icon>
         <v-icon
         dense
@@ -370,16 +498,20 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         </v-icon>
     </template>
 
+    <template v-slot:item.price="{ item }">
+      {{format(item.price)}}
+    </template>
+
     <template v-slot:item.tax_amount="{ item }">
-    {{format(item.tax_amount) + ' ' + item.currency_symbol}}
+    {{format(item.tax_amount)}}
     </template>
 
     <template v-slot:item.subtotal="{ item }">
-        {{format(item.subtotal) + ' ' + item.currency_symbol}}
+        {{format(item.subtotal)}}
     </template>
 
     <template v-slot:item.total="{ item }">
-        {{format(item.total) + ' ' + item.currency_symbol}}
+        {{format(item.total)}}
     </template>
 
 
