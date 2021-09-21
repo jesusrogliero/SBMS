@@ -29,6 +29,8 @@ const currencies = {
 	 'create-currency': async function(params) {
         try {
 
+			if(params.exchange_rate < 2) throw new Error('Debes ingresar una tasa de cambio correcta');
+
             // creo una nueva moneda
             const new_currency =  await Currency.create({
                 name: params.name,
@@ -79,6 +81,7 @@ const currencies = {
 			if( empty(params.name) ) throw new Error("El nombre es obligatorio");
 			if( empty(params.symbol) ) throw new Error("El simbolo es obligatorio");
 			if( empty(params.exchange_rate) ) throw new Error("La tasa de cambio es obligatoria");
+			if( empty(params.exchange_rate < 2) ) throw new Error("Debes ingresar una tasa de cambio correcta");
 
 			let currency = await Currency.findByPk(params.id);
 
