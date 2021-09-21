@@ -125,6 +125,7 @@ let costs = Vue.component('purchases-orders', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
