@@ -59,7 +59,12 @@ let Taxes = {
      */
     'show-tax': async function(id) {
         try {
-            const tax = await Tax.findByPk(id, {raw: true});
+            const tax = await Tax.findByPk(id, {
+                attributes: {
+                    include: [Tax.sequelize.literal('percentage*100 AS percentage')]
+                },  
+                raw: true
+            });
 
             if(tax === null) throw new Error("Este impuesto no existe");
 
