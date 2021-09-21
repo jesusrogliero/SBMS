@@ -6,6 +6,8 @@ const PurchaseOrder = require('../models/PurchaseOrder.js');
 const Currency = require('../models/Currency.js');
 const Provider = require('../models/Provider.js');
 const PurchaseOrderState = require('../models/PurchaseOrderState.js');
+const Product = require('../models/Product.js');
+const PurchaseOrderItem = require('../models/PurchaseOrderItem.js');
 
 const purchase_orders = {
 
@@ -16,7 +18,7 @@ const purchase_orders = {
 	 */
 	'index-purchases': async function() {
 		try {
-			let a =  await PurchaseOrder.findAll({
+			return await PurchaseOrder.findAll({
 				attributes: {
 					include: [
 						[sequelize.col('currency.name'), 'currency_name'],
@@ -44,8 +46,7 @@ const purchase_orders = {
 				],
 				raw:true
 			});
-			console.log(a);
-			return a;
+
 		} catch (error) {
 	
 			return { message: error.message, code:0} ;
@@ -92,7 +93,7 @@ const purchase_orders = {
 	 */
 	'show-purchase': async function(id) {
 		try {
-			let order = await ProductPrice.findByPk(id, {raw: true});
+			let order = await PurchaseOrder.findByPk(id, {raw: true});
 
 			if( empty(order) ) throw new Error("Esta orden de compra no existe");
 
@@ -113,8 +114,52 @@ const purchase_orders = {
 	'approve-purchase': async function(id) {
 		try {
 
-            // codigo para aprovar la orden
+			const order = await PurchaseOrder.findByPk(id);
+			
+			if( empty(order) ) throw new Error("Esta orden de compra no existe");
+
+			if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
+
+			let items = await PurchaseOrderItem.findAll({
+				where: { purchase_order_id: order.id },
+				raw: true
+			});
+
+			items.forEach(async (item) => {
+				let product = await Product.findByPk(item.product_id);
+				product.stock = product.stock + item.quantity;
+				await product.save();
+			});
+
+			order.state_id = 3;
+			await order.save();
+			
+			return {message: "La orden fue aprobada correctamente", code: 1 };
             
+		} catch (error) {
+			return {message: error.message, code: 0};
+		}
+	},
+
+
+	/**
+	 * funcion que genera una orden de compra
+	 * 
+	 * @param {int} id 
+	 * @returns message
+	 */
+	'generate-purchase': async function(id) {
+		try {
+
+			let order = await PurchaseOrder.findByPk(id);
+
+			if( empty(order) ) throw new Error("Esta orden de compra no existe");
+
+			order.state_id = 2;
+			await order.save();
+			
+			return {message: "La orden fue generada correctamente", code: 1 };
+			
 		} catch (error) {
 			return {message: error.message, code: 0};
 		}
