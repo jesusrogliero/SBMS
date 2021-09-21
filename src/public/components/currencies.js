@@ -26,12 +26,7 @@ let currencies = Vue.component('currencies', {
     ],
     currencies: [],
     editedIndex: -1,
-    editedItem: {
-      id: '',
-      name: '',
-      symbol: '',
-      exchange_rate: '',
-    },
+    editedItem: {},
   }),
 
   computed: {
@@ -50,6 +45,7 @@ let currencies = Vue.component('currencies', {
   },
 
   created () {
+    this.cleanForm();
     this.initialize();
 
   },
@@ -72,7 +68,7 @@ let currencies = Vue.component('currencies', {
 
       if(this.editedItem.code == 0){
         alertApp({color:"error", text: this.editedItem, icon: "alert" });
-        this.editedItem = {id: '',name: '',symbol: '',exchange_rate: ''};
+        this.cleanForm();
       }
         
 
@@ -81,6 +77,15 @@ let currencies = Vue.component('currencies', {
 
     format: function(value) {
       return formatMoney(value);
+    },
+
+    cleanForm: function() {
+      this.editedItem = {
+        id: '',
+        name: '',
+        symbol: '',
+        exchange_rate: '',
+      };
     },
 
     deleteItemConfirm: async function() {
@@ -100,6 +105,7 @@ let currencies = Vue.component('currencies', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -108,12 +114,7 @@ let currencies = Vue.component('currencies', {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.initialize();
-        this.editedItem = {
-          id: '',
-          name: '',
-          symbol: '',
-          exchange_rate: '',
-        };
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },

@@ -26,12 +26,7 @@ let prices = Vue.component('prices', {
     ],
     prices: [],
     editedIndex: -1,
-    editedItem: {
-      id: '',
-      name: '',
-      price: 0,
-      is_default: false
-    },
+    editedItem: {},
   }),
 
   computed: {
@@ -51,6 +46,7 @@ let prices = Vue.component('prices', {
 
   created () {
     this.initialize();
+    this.cleanForm();
 
   },
 
@@ -58,6 +54,15 @@ let prices = Vue.component('prices', {
     initialize: async function () {
       this.prices = await execute('index-prices',{});
       this.pageCount =  Math.round ( Object.keys(this.prices).length / 16);
+    },
+
+    cleanForm: function() {
+      this.editedItem = {
+        id: '',
+        name: '',
+        price: 0,
+        is_default: false
+      }
     },
 
     editItem: async function(item) {
@@ -72,7 +77,7 @@ let prices = Vue.component('prices', {
 
       if(this.editedItem.code == 0){
         alertApp({color:"error", text: this.editedItem, icon: "alert" });
-        this.editedItem = {id: '', name: '', price: 0, is_default: false};
+        this.cleanForm();
       }
         
       this.dialogDelete = true
@@ -95,6 +100,7 @@ let prices = Vue.component('prices', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -103,18 +109,12 @@ let prices = Vue.component('prices', {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.initialize();
-        this.editedItem = {
-          id: '',
-          name: '',
-          price: 0,
-          is_default: false
-        };
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
 
     save: async function() {
-      console.log('hola');
       let result = null;
       
       if (this.editedIndex > -1) {
@@ -123,7 +123,6 @@ let prices = Vue.component('prices', {
         result = await execute('create-price', this.editedItem);
       }
 
-      console.log(result);
       if(result.code === 1) {
         alertApp({color:"success", text: result, icon: "check" }); 
         this.close();

@@ -25,11 +25,7 @@ let taxes = Vue.component('taxes', {
     ],
     taxes: [],
     editedIndex: -1,
-    editedItem: {
-      id: '',
-      name: '',
-      percentage: '',
-    },
+    editedItem: {},
   }),
 
   computed: {
@@ -48,14 +44,22 @@ let taxes = Vue.component('taxes', {
   },
 
   created () {
+    this.cleanForm();
     this.initialize();
-
   },
 
   methods: {
     initialize: async function () {
       this.taxes = await execute('index-taxes',{});
       this.pageCount =  Math.round ( Object.keys(this.taxes).length / 16);
+    },
+
+    cleanForm: function() {
+      this.editedItem = {
+        id: '',
+        name: '',
+        percentage: 0,
+      };
     },
 
     editItem: async function(item) {
@@ -70,10 +74,9 @@ let taxes = Vue.component('taxes', {
 
       if(this.editedItem.code == 0){
         alertApp({color:"error", text: this.editedItem, icon: "alert" });
-        this.editedItem = {id: '',name: '',percentage: ''};
+        this.cleanForm();
       }
         
-
       this.dialogDelete = true
     },
 
@@ -94,6 +97,7 @@ let taxes = Vue.component('taxes', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -102,11 +106,7 @@ let taxes = Vue.component('taxes', {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.initialize();
-        this.editedItem = {
-          id: '',
-          name: '',
-          percentage: '',
-        };
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
