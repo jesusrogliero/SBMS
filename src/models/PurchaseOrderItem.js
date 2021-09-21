@@ -1,6 +1,9 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
+const Product = require('./Product.js');
+
+
 const PurchaseOrderItem = sequelize.define("purchase_orders_items", {
    
     id: {
@@ -9,11 +12,11 @@ const PurchaseOrderItem = sequelize.define("purchase_orders_items", {
         primaryKey: true,
     },
 
-    Purchase_order_id: {
+    purchase_order_id: {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "purchases_orders",
+            model: "purchase_orders",
             key: "id"
         }
     },
@@ -109,5 +112,6 @@ const PurchaseOrderItem = sequelize.define("purchase_orders_items", {
 
 });
 
+PurchaseOrderItem.belongsTo(Product, {foreignKey: 'product_id'});
 
 module.exports = PurchaseOrderItem;
