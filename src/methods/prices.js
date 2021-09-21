@@ -70,10 +70,14 @@ const prices = {
 	 */
 	'show-price': async function(id) {
 		try {
-			let price = await Price.findByPk(id, {raw: true});
+			let price = await Price.findByPk(id, {
+				attributes: {
+					include: [Price.sequelize.literal('price*100 AS price')]
+				},
+				raw: true
+			});
 
 			if(price === null) throw new Error("Este precio no existe");
-
 			return price;
 
 		} catch (error) {
