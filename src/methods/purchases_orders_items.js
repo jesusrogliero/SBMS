@@ -50,7 +50,7 @@ const purchase_orders_items = {
 
         try {
 
-			if(params.price < 1) throw new Error('El precio ingresado no es correcto');
+			if(params.price < 0) throw new Error('El precio ingresado no es correcto');
 			if(params.tax < 0 ) throw new Error('El impuesto ingresado no es correcto');
 			if(params.quantity < 1) throw new Error('La cantidad de producto ingresada no es correcta');
 
