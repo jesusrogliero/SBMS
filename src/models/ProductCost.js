@@ -1,6 +1,9 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
 
+const Product = require('./Product.js');
+const Currency = require('./Currency.js');
+
 const ProductCost = sequelize.define("products_costs", {
     id: {
         type: DataTypes.BIGINT,
@@ -71,6 +74,9 @@ const ProductCost = sequelize.define("products_costs", {
         allowNull: false
     }
 });
+
+ProductCost.belongsTo(Product, {foreignKey: 'product_id'});
+ProductCost.belongsTo(Currency, {foreignKey: 'currency_id'});
 
 
 module.exports = ProductCost;
