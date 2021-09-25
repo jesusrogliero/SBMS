@@ -108,7 +108,7 @@ const prices = {
 			if( price === null) throw new Error("Este precio no existe");
 
 			price.name = params.name;
-			price.price = params.price;
+			price.price = params.price / 100;
 
             if( price.id != price_default.id) {
                 
