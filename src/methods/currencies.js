@@ -67,6 +67,40 @@ const currencies = {
 		}
 	},
 
+	
+	/**
+	 * funcion que actualiza la tasa de cambio de una moneda
+	 * 
+	 * @param {*} params 
+	 * @returns message
+	 */
+	 'update-exchange_rate': async function(params) {
+
+		try {
+
+			if( empty(params.id) ) throw new Error("Error al cambiar actualizar la tasa de cambio");
+			if( empty(params.exchange_rate) ) throw new Error("Debes ingresar una tasa de cambio correcta");
+			if( empty(params.exchange_rate < 2) ) throw new Error("Debes ingresar una tasa de cambio correcta");
+
+			let currency = await Currency.findByPk(params.id);
+
+			if( currency.exchange_rate === 1)
+				throw new Error("No es posible actualizar la tasa de cambio de la moneda predeterminada");
+			
+			if( currency === null) throw new Error("Esta moneda no existe");
+
+			currency.exchange_rate = params.exchange_rate;
+
+			await currency.save();
+
+			return {message: "Actualizado Correctamente", code: 1};
+			
+		} catch (error) {
+			console.log(error);
+			return { message: error.message, code: 0 };
+		}
+	},
+
 
 	/**
 	 * funcion que actualiza un recurso
