@@ -25,15 +25,9 @@ let products = Vue.component('products', {
       { text: 'Actualizado', value: 'updatedAt' },
       { text: 'Acciones', value: 'actions', sortable: false },
     ],
-    taxes: [],
     products: [],
     editedIndex: -1,
-    editedItem: {
-      id: '',
-      name: '',
-      stock: '',
-      taxId: '',
-    },
+    editedItem: {}
   }),
 
   computed: {
@@ -52,6 +46,7 @@ let products = Vue.component('products', {
   },
 
   created () {
+    this.cleanForm();
     this.initialize();
 
   },
@@ -62,8 +57,18 @@ let products = Vue.component('products', {
       this.pageCount =  Math.round ( Object.keys(this.products).length / 16);
     },
 
+    cleanForm: function() {
+      this.editedItem = {
+        id: '',
+        name: '',
+        stock: '',
+        taxId: 0,
+      }; 
+    },
+
     getSelectTaxe: function(value) {
         this.editedItem.taxId = value;
+        console.log(this.editedItem.taxId);
     },
 
     editItem: async function(item) {
@@ -78,7 +83,7 @@ let products = Vue.component('products', {
 
       if(this.editedItem.code == 0){
         alertApp({color:"error", text: this.editedItem, icon: "alert" });
-        this.editedItem = {id: '',name: '',stock: '',taxId: ''};
+        this.cleanForm();
       }
         
 
@@ -102,6 +107,7 @@ let products = Vue.component('products', {
       this.dialog = false;
       this.$nextTick(() => {
         this.initialize();
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -110,12 +116,7 @@ let products = Vue.component('products', {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.initialize();
-        this.editedItem = {
-          id: '',
-          name: '',
-          stock: '',
-          taxId: '',
-        };
+        this.cleanForm();
         this.editedIndex = -1;
       })
     },
@@ -272,7 +273,7 @@ let products = Vue.component('products', {
       </v-dialog>
       <v-dialog v-model="dialogDelete" max-width="600px">
         <v-card>
-          <v-card-title class="text-h5">Estas seguro que deseas eliminar el cliente?</v-card-title>
+          <v-card-title class="text-h5">Estas seguro que deseas eliminar este producto?</v-card-title>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="error" text @click="closeDelete">Cancelar</v-btn>
