@@ -51,11 +51,14 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
       val || this.closeDelete()
     },
     
-    id (val) {
+    id: async function (val) {
        
         if(val != null) {
             this.cleanForm();
-            this.initialize();
+             await this.initialize();
+
+            this.currency = await execute('show-currency', this.purchase.currency_id);
+            this.provider = await execute('show-provider', this.purchase.provider_id);
         }
     }
   },
@@ -63,16 +66,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
   methods: {
     initialize: async function () {
-      
-        this.purchases_items = await execute('index-purchases_items', this.id);
-        this.pageCount =  Math.round ( Object.keys(this.purchases_items).length / 16);
-
         this.purchase = await execute('show-purchase', this.id);
-
-        this.currency = await execute('show-currency', this.purchase.currency_id);
-
-        this.provider = await execute('show-provider', this.purchase.provider_id);
-
+        this.purchases_items = await execute('index-purchases_items', this.id);
+        this.pageCount =  Math.round ( Object.keys(this.purchases_items).length / 16); 
     },
 
     
@@ -246,6 +242,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         <v-col>
         <v-card
         elevation="2"
+        height="16em"
         >
           <v-card-title >Datos de la Orden</v-card-title>
 
@@ -261,7 +258,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
           <v-col cols="6" class="font-weight-black" >Estado:</v-col>
           <v-col cols="6" v-if="purchase.state_id == 1">Pendiente</v-col>
           <v-col cols="6" v-if="purchase.state_id == 2">Generada</v-col>
-          <v-col cols="6" v-else>Aprobada</v-col>
+          <v-col cols="6" v-if="purchase.state_id == 3">Aprobada</v-col>
           </v-row>
 
           <v-row>
@@ -281,6 +278,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         <v-col>
         <v-card
         elevation="2"
+        height="16em"
         >
           <v-card-title>Totalizacion</v-card-title>
 
@@ -309,6 +307,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         <v-col>
         <v-card
         elevation="2"
+        height="16em"
         >
           <v-card-title>Datos del Provedor</v-card-title>
 
