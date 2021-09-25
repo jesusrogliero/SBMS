@@ -8,6 +8,7 @@ const Provider = require('../models/Provider.js');
 const PurchaseOrderState = require('../models/PurchaseOrderState.js');
 const Product = require('../models/Product.js');
 const PurchaseOrderItem = require('../models/PurchaseOrderItem.js');
+const {generate_product_cost} = require('./products_costs.js');
 
 const purchase_orders = {
 
@@ -131,10 +132,14 @@ const purchase_orders = {
 				await product.save();
 			});
 
+			let result = await generate_product_cost(order, items);
+
+			if( result !== true) throw new Error(result.message);
+
 			order.state_id = 3;
 			await order.save();
 			
-			return {message: "La orden fue aprobada correctamente", code: 1 };
+			return {message: "La orden ingresada correctamente", code: 1 };
             
 		} catch (error) {
 			return {message: error.message, code: 0};
@@ -180,7 +185,13 @@ const purchase_orders = {
 
             if(order.state_id != 1) throw new Error("Esta orden ya fue procesada");
 
-			order.destroy();
+			await PurchaseOrderItem.destroy({
+				where: {
+					purchase_order_id: order.id
+				}
+			});
+
+			await order.destroy();
 
 			return {message: "Eliminado Correctamente", code: 1};
 
