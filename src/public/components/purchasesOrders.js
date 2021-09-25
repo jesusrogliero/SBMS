@@ -148,6 +148,7 @@ let costs = Vue.component('purchases-orders', {
     closeDialogFull: function() {
         this.purchases_id = null;
         this.dialogFull = false;
+        this.initialize();
     },
 
     save: async function() { 
