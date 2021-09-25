@@ -25,8 +25,9 @@ let navigation = Vue.component('navigation', {
 
         toPurchases: function() { this.$router.push('/purchases_orders')},
 
-        toProviders: function() { this.$router.push('/providers')}
+        toProviders: function() { this.$router.push('/providers')},
 
+        toCosts: function() { this.$router.push('/costs')},
 
     },
 
@@ -58,7 +59,7 @@ let navigation = Vue.component('navigation', {
         </v-list-item-icon>
 
         <v-list-item-content @click="toHome">
-        <v-list-item-title class="text-body-1" style="color: white;">Home</v-list-item-title>
+        <v-list-item-title class="text-body-1" style="color: white;">Dashboard</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
 
@@ -80,7 +81,7 @@ let navigation = Vue.component('navigation', {
             <v-icon color="#8e97a5">mdi-chart-line</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toCosts">
             <v-list-item-title class="text-body-1" style="color: white;">Costos</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
