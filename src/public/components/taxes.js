@@ -112,7 +112,6 @@ let taxes = Vue.component('taxes', {
     },
 
     save: async function() {
-      console.log('hola');
       let result = null;
       
       if (this.editedIndex > -1) {
@@ -121,7 +120,6 @@ let taxes = Vue.component('taxes', {
         result = await execute('create-tax', this.editedItem);
       }
 
-      console.log(result);
       if(result.code === 1) {
         alertApp({color:"success", text: result, icon: "check" }); 
         this.close();
