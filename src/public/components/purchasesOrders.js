@@ -282,14 +282,6 @@ let costs = Vue.component('purchases-orders', {
                 </v-col>
                 
 
-                <v-col cols="6" class="mt-5">
-                    <v-slider
-                    v-model="editedItem.tax"
-                    thumb-label
-                    label="Impuesto %"
-                    ></v-slider>
-                </v-col>
-
                 <v-col cols="6">
                     <v-menu
                     ref="menu"
