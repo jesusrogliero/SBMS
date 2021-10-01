@@ -78,16 +78,19 @@ const currencies = {
 
 		try {
 
+			// valido la informacion
 			if( empty(params.id) ) throw new Error("Error al cambiar actualizar la tasa de cambio");
 			if( empty(params.exchange_rate) ) throw new Error("Debes ingresar una tasa de cambio correcta");
 			if( empty(params.exchange_rate < 2) ) throw new Error("Debes ingresar una tasa de cambio correcta");
 
 			let currency = await Currency.findByPk(params.id);
 
+			// en caso que aun no se haya creado la moneda dolar
+			if( empty(currency) ) 
+				throw new Error('Debes crear moneda Dolar para establecer una tasa de cambio');
+			
 			if( currency.exchange_rate === 1)
 				throw new Error("No es posible actualizar la tasa de cambio de la moneda predeterminada");
-			
-			if( currency === null) throw new Error("Esta moneda no existe");
 
 			currency.exchange_rate = params.exchange_rate;
 
