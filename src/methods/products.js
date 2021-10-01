@@ -8,6 +8,7 @@ const ProductType = require('../models/ProductType.js');
 const ProductCost = require('../models/ProductCost.js');
 const ComboItem = require('../models/ComboItem.js');
 const Currency = require('../models/Currency.js');
+const Prices = require('../models/Price.js');
 
 let products = {
 
@@ -134,6 +135,68 @@ let products = {
         }
 
     },
+
+    /**
+     * funcion que muestra la informacion de un producto
+     * 
+     * @param {int} id 
+     * @returns {json} product
+     */
+        'get_product_prices': async function(params) {
+            try {
+    
+                if( empty(params.id) ) throw new Error('Debes seleccionar un producto');
+                
+                if( empty(params.currency_id)) 
+                    params.currency_id = 1;
+
+
+                const product = await Product.findByPk(params.id);
+
+                if( empty(product )) throw new Error('Este producto no existe');
+
+                const product_cost = await ProductCost.findAll({
+                    attributes: {
+                        include: [
+                            [sequelize.col('currency.symbol'), 'symbol']
+                        ]
+                    },
+                    include: [
+                        {
+                            model: Currency,
+                            required: true,
+                            attributes: []
+                        }
+                    ],
+                    where: {
+                        product_id: product.id,
+                        currency_id: params.currency_id
+                    },
+                    raw: true
+                });
+
+                const prices = await Prices.findAll({raw: true});
+
+                let products_prices = [];
+
+                product_cost.forEach( prd_cost => {
+                    
+                    for (let i = 0; i < prices.length; i++) {
+                        products_prices.push({
+                            price: parseFloat(prd_cost.cost + prd_cost.cost + prices[i].price).toFixed(2),
+                            price_name: prices[i].name,
+                            currency_symbol: prd_cost.symbol
+                        });
+                    }
+                });
+    
+                return products_prices;
+    
+            }catch(error) {
+                console.error(error);
+                return {message: error.message, code: 0};
+            }
+        },
 
     
     /**
