@@ -1,6 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const { loadMethods } = require('./methods');
 const dirs = require('./dirs');
+require('events').EventEmitter.defaultMaxListeners = 15;
 
 // funcion de inicio de la aplicacion
 const main = function () {
@@ -17,7 +18,6 @@ const main = function () {
   });
 
   win.setMenuBarVisibility(false)
-  win.setIcon('icon.png');
   win.loadFile(dirs.public + 'index.html');
 
 
