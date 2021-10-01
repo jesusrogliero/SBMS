@@ -31,8 +31,12 @@ const seeds =  async function(Model, data) {
 	await seeds(require('./models/Currency.js'), [
 		{
 			name: 'Bolivares',
-			symbol: 'Bs.S',
+			symbol: 'Bs',
 			exchange_rate: 1
+		},
+		{
+			name: 'Dolar',
+			symbol: '$',
 		},
 
 	]).then(e => console.log);
