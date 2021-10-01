@@ -34,6 +34,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     purchase: {},
     currency: {},
     provider: {},
+    currency_symbol: "",
     editedIndex: -1,
     editedItem: {},
   }),
@@ -60,6 +61,13 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
             this.currency = await execute('show-currency', this.purchase.currency_id);
             this.provider = await execute('show-provider', this.purchase.provider_id);
+
+            let result = await execute('show-currency-symbol', this.currency.id);
+
+            if(result.code == 0) 
+              alertApp({color:"error", text: result, icon: "alert" }); 
+            
+            this.currency_symbol = result.symbol;
         }
     }
   },
@@ -84,7 +92,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
             product_id: '',
             price: '',
             quantity: '',
-            tax: '',
+            tax: 0,
           }
     },
 
@@ -472,6 +480,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                         <v-text-field
                             v-model="editedItem.price"
                             label="Precio"
+                            :prefix="currency_symbol"
                         ></v-text-field>
                     </v-col>
 
