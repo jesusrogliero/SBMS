@@ -111,10 +111,11 @@ const purchase_orders = {
 	 * @param {int} id 
 	 * @returns message
 	 */
-	'approve-purchase': async function(id) {
+	'approve-purchase': async function(params) {
 		try {
+			if( empty(params.id) ) throw new Error('Ocurrio un error al aprobar tu orden');
 
-			const order = await PurchaseOrder.findByPk(id);
+			const order = await PurchaseOrder.findByPk(params.id);
 			
 			if( empty(order) ) throw new Error("Esta orden de compra no existe");
 
@@ -131,14 +132,16 @@ const purchase_orders = {
 				await product.save();
 			});
 
-			let result = await generate_product_cost(order, items);
-
-			if( result !== true) throw new Error(result.message);
+			
+			if(params.generate_cost === true) {
+				let result = await generate_product_cost(order, items);
+				if( result !== true) throw new Error(result.message);
+			}
 
 			order.state_id = 3;
 			await order.save();
 			
-			return {message: "La orden ingresada correctamente", code: 1 };
+			return {message: "La orden fue ingresada correctamente", code: 1 };
             
 		} catch (error) {
 			return {message: error.message, code: 0};
