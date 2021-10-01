@@ -11,6 +11,8 @@ let products = Vue.component('products', {
     page: 1,
     pageCount: 0,
     search: "",
+	  tab_combo: true,
+    tab: null,
     hidden: false,
     headers: [
       {
@@ -21,13 +23,17 @@ let products = Vue.component('products', {
       { text: 'Nombre', value: 'name' },
       { text: 'Existencia', value: 'stock' },
       { text: 'Impuesto', value: 'percentage' },
+	  { text: 'Tipo de Producto', value:'product_type' },
       { text: 'Creado', value: 'createdAt' },
       { text: 'Actualizado', value: 'updatedAt' },
       { text: 'Acciones', value: 'actions', sortable: false },
     ],
     products: [],
     editedIndex: -1,
-    editedItem: {}
+    editedItem: {},
+    suggested_price: 0,
+    product_id: null,
+    quantity: null
   }),
 
   computed: {
@@ -42,7 +48,7 @@ let products = Vue.component('products', {
     },
     dialogDelete (val) {
       val || this.closeDelete()
-    },
+    }
   },
 
   created () {
@@ -57,18 +63,96 @@ let products = Vue.component('products', {
       this.pageCount =  Math.round ( Object.keys(this.products).length / 16);
     },
 
+
     cleanForm: function() {
       this.editedItem = {
         id: '',
         name: '',
         stock: '',
-        taxId: 0,
+        taxId: null,
+        product_type_id:null,
+        cost_combo: 0,
+        items: []
       }; 
+      this.tab = null;
+      this.product_id = null;
+      this.quantity = null;
+      this.suggested_price = 0;
     },
+
+    
+	// calcula un posible precio del combo
+    suggestedPrice: function(val) {
+
+		if( typeof this.suggested_price === 'string')
+			this.suggested_price = parseFloat(this.suggested_price.split(' ').join('').split(',').join('').split('Bs.S').join(''));
+		
+		this.suggested_price = this.suggested_price + val;
+		this.suggested_price = formatMoney(this.suggested_price);
+	},
 
     getSelectTaxe: function(value) {
         this.editedItem.taxId = value;
-        console.log(this.editedItem.taxId);
+        console.log(value);
+    },
+
+    getSelectProductType: function(value) {
+      this.editedItem.product_type_id = value;
+
+	  if(value === 1) {
+		this.tab_combo = true;
+	  }
+		
+	  if(value === 2)
+	  	this.tab_combo = false;
+    },
+
+    getSelectItemCombo: function(value) {
+        this.product_id = value;
+    },
+
+
+	format: function(val) {
+		return formatMoney(val);
+	},
+
+	// añade un producto al combo
+    addItem: async function() {
+
+		for (let i = 0; i < this.editedItem.items.length; i++) {
+			
+			if(this.product_id === this.editedItem.items[i].product_id){
+				alertApp({color:"error", text: {message: 'Este Producto ya fue agregado al combo'}, icon: "alert" });
+				return;
+			}
+		}
+
+        let prd = await execute('get_product_info', {id: this.product_id, quantity: this.quantity});
+
+        if(prd.code == 0){
+          alertApp({color:"error", text: prd, icon: "alert" });
+        }
+
+        this.editedItem.items.push(prd.data);
+
+		this.suggestedPrice(prd.data.price);
+    },
+
+
+	// elimina un producto del combo
+	removeItem: async function(item) {
+		
+		for (let i = 0; i < this.editedItem.items.length; i++) {
+			
+			if(item.product_id === this.editedItem.items[i].product_id)
+				this.editedItem.items.splice(i, 1);
+		}
+
+		if( typeof this.suggested_price === 'string')
+				this.suggested_price = parseFloat(this.suggested_price.split(' ').join('').split(',').join('').split('Bs.S').join(''));
+
+		this.suggested_price = this.suggested_price - item.price;
+		this.suggested_price = formatMoney(this.suggested_price);
     },
 
     editItem: async function(item) {
@@ -86,7 +170,6 @@ let products = Vue.component('products', {
         this.cleanForm();
       }
         
-
       this.dialogDelete = true
     },
 
@@ -179,7 +262,7 @@ let products = Vue.component('products', {
       
       <v-dialog
         v-model="dialog"
-        max-width="500px"
+       max-width="700px"
       >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -216,40 +299,159 @@ let products = Vue.component('products', {
           </v-card-title>
 
           <v-card-text>
-            <v-container>
+
+            <v-tabs v-model="tab">
+              <v-tab>Producto</v-tab>
+              <v-tab
+  				:disabled="tab_combo"
+			  >Combo</v-tab>
+            </v-tabs>
+
+
+            <v-tabs-items v-model="tab">
+              
+              <v-tab-item>
+              <v-container>
               <v-row>
-                <v-col
-                  cols="6"
-                >
-                  <v-text-field
-                    v-model="editedItem.name"
-                    label="Nombre"
-                  ></v-text-field>
+                
+                <v-col cols="6">
+                    <v-text-field
+                      v-model="editedItem.name"
+                      label="Nombre"
+                    ></v-text-field>
                 </v-col>
-                <v-col
-                  cols="6"
-                >
-                  <v-text-field
-                    v-model="editedItem.stock"
-                    label="Existencia"
-                  ></v-text-field>
-                </v-col>
+                  
+                  <v-col cols="6">
+                    <v-text-field
+                      v-model="editedItem.stock"
+                      label="Existencia"
+                    ></v-text-field>
+                  </v-col>
 
 
-                <v-col cols = "12">
-                    <autocomplete-form
-                        uri = "index-taxes"
-                        label = "Impuesto"
-                        column = "name"
-                        itemValue = "id"
-                        :defaultValue = "editedItem.taxId"
-                        :getSelect = "getSelectTaxe"
-                    />
-                </v-col>
+                  <v-col cols = "6" class="mt-n4">
+                      <autocomplete-form
+                          uri = "index-taxes"
+                          label = "Impuesto"
+                          column = "name"
+                          itemValue = "id"
+                          :defaultValue = "editedItem.taxId"
+                          :getSelect = "getSelectTaxe"
+                      />
+                  </v-col>
+
+
+                  <v-col cols = "6" class="mt-n4">
+                  <autocomplete-form
+                      uri = "index-products_types"
+                      label = "Tipo de Producto"
+                      column = "type"
+                      itemValue = "id"
+                      :defaultValue = "editedItem.product_type_id"
+                      :getSelect = "getSelectProductType"
+                  />
+                  </v-col>
+              </v-row>
+              </v-container>
+              </v-tab-item>
             
+              
+              <v-tab-item>
+              
+              <v-row>
+
+              <v-col class="ml-3 mt-4" cols="6" sm="5">
+                <v-text-field
+                v-model="editedItem.cost_combo"
+                label="Costo del combo"
+				prefix="Bs.S"
+              ></v-text-field>
+              </v-col>
+
+              <v-col class="mt-4" cols="6" sm="5">
+                <v-text-field
+                v-if="editedIndex === -1"
+                disabled
+                v-model="suggested_price"
+				prefix="Bs.S"
+                label="Costo Sugerido"
+                ></v-text-field>
+              </v-col>
+              
+              <v-col class="ml-3" cols="6" sm="5">
+                <autocomplete-form
+                    uri = "index-products-standar"
+                    label = "Selecciona un producto"
+                    column = "name"
+                    itemValue = "id"
+                    :defaultValue = "product_id"
+                    :getSelect = "getSelectItemCombo"
+                />
+              </v-col>
+
+                <v-col cols="5" sm="5">
+                  <v-text-field
+                    v-model="quantity"
+                    label="Cantidad"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="1">
+                <v-btn
+                @click="addItem"
+                class="mt-4"
+                color="success"
+                small
+              >
+                +
+              </v-btn>
+                </v-col>
 
               </v-row>
-            </v-container>
+              </v-col>
+              
+
+              <v-col cols="12" >
+                <v-simple-table
+                fixed-header
+                height="200px"
+                >
+                  <template v-slot:default>
+                    <thead>
+                      <tr>
+                        <th class="text-left">Name</th>
+                        <th class="text-left">Cantidad</th>
+						            <th class="text-left">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                    v-for=" item in editedItem.items"
+                    :key="item.name"
+                    >
+                      <td>{{ item.name }}</td>
+                      <td>{{ item.quantity }}</td>
+                        <td>
+                        <v-icon
+                        dense
+                        @click="removeItem(item)"
+                        color="error"
+                        >
+                        mdi-delete
+                        </v-icon>
+                      </td>
+                      </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
+                </v-col>
+
+              </v-row>
+              </v-tab-item>
+
+            </v-tabs-items>
+
+
           </v-card-text>
 
           <v-card-actions>
