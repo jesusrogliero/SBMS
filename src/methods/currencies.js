@@ -67,6 +67,32 @@ const currencies = {
 		}
 	},
 
+	/**
+	 * funcion que muestra el symbolo de la moneda
+	 * 
+	 * @param {int} id 
+	 * @returns {json} currency
+	 */
+		 'show-currency-symbol': async function(id) {
+			try {
+				let currency = await Currency.findOne({
+					attributes: ['symbol'],
+					where: {
+						id: id
+					},
+					raw: true
+				});
+	
+				if(currency === null) throw new Error("Esta moneda no existe");
+				
+				console.log(currency);
+				return currency;
+	
+			} catch (error) {
+				return {message: error.message, code: 0};
+			}
+		},
+
 	
 	/**
 	 * funcion que actualiza la tasa de cambio de una moneda
