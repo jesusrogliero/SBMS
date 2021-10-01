@@ -20,24 +20,19 @@ let home = Vue.component('home', {
 		this.exchange_rate = currency.exchange_rate;
 	},
 
-	watch: {
-		exchange_rate: function(val) {
-			
-			if( typeof val === 'string')
-				this.exchange_rate = parseFloat(val.split(' ').join('').split(',').join('').split('Bs.S').join(''));
-	 
-			this.exchange_rate = formatMoney(this.exchange_rate);
-		}
-	},
-	
 
 	methods: {
 
-		adjust_exchange: async function() {
-			let exchange_rate = parseFloat(this.exchange_rate.split(' ').join('').split(',').join('').split('Bs.S').join(''));
+		format: function(val) {
+			if( typeof val === 'string'){ 
+				this.exchange_rate = parseFloat(val.split(' ').join('').split(',').join('').split('Bs.S').join(''));
+				console.log(this.exchange_rate);
+			}
+		},
 
+		adjust_exchange: async function() {
 			try {
-				let result = await execute('update-exchange_rate', {id: 2, exchange_rate: exchange_rate} );
+				let result = await execute('update-exchange_rate', {id: 2, exchange_rate: this.exchange_rate} );
 
 				if(result.code == 0) throw new Error(result.message);
 							
@@ -45,6 +40,7 @@ let home = Vue.component('home', {
 
 				if(result.code === 1) {
 					alertApp({color:"success", text: result, icon: "check" }); 
+					this.exchange_rate = formatMoney(this.exchange_rate);
 				}else{
 					throw new Error(result.message);
 				}
@@ -98,6 +94,7 @@ let home = Vue.component('home', {
 						v-model="exchange_rate"
 						:prefix="currency_default.symbol"
 						v-on:keyup.enter="adjust_exchange"
+						@click="format(exchange_rate)"
 					> </v-text-field>
 					
 				</v-card>
