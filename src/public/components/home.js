@@ -50,7 +50,7 @@ let home = Vue.component('home', {
 				}
 				
 			} catch (error) {
-				alertApp({color:"error", text: error.message, icon: "alert" }); 
+				alertApp({color:"error", text: error, icon: "alert" }); 
 			} 
 
 
@@ -92,10 +92,11 @@ let home = Vue.component('home', {
 
 				<v-col>
 				<v-card color="teal lighten-4">
-					<v-card-title>Tasa del dia en {{currency_default.symbol}}</v-card-title>
+					<v-card-title>Tasa del dia</v-card-title>
 					<v-text-field
-						class="ml-4 mr-4 mt-n2 text-h4"
+						class="ml-4 mr-4 mt-n2 text-h5"
 						v-model="exchange_rate"
+						:prefix="currency_default.symbol"
 						v-on:keyup.enter="adjust_exchange"
 					> </v-text-field>
 					
