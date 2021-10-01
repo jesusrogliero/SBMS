@@ -8,6 +8,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    dialog_approve: false,
     page: 1,
     pageCount: 1,
     search: "",
@@ -104,9 +105,15 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
     },
 
+    approveOrderDialog:  function() {
+      this.dialog_approve = true;
+    },
 
-    approveOrder: async function() {
-      let result = await execute('approve-purchase', this.id);
+    approveOrder: async function(generate_cost) {
+      let result = await execute('approve-purchase', {
+        id: this.id,
+        generate_cost: generate_cost
+      });
 
       if(result.code == 1) {
         alertApp({color:"success", text: result, icon: "check" }); 
@@ -114,6 +121,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         alertApp({color:"error", text: result, icon: "alert" }); 
       }
 
+      this.dialog_approve = false;
       this.initialize();
 
     },
@@ -190,6 +198,40 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
 	template: `
   <v-container>
+
+    <v-row justify="center">
+      <v-dialog
+        v-model="dialog_approve"
+        persistent
+        max-width="300"
+      >
+        <v-card>
+          <v-card-title class="text-h5">
+            Importante!!
+          </v-card-title>
+          <v-card-text class="text-h6">¿Deseas que ajuste los costos de los productos por ti?</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="red darken-1"
+              text
+              @click="approveOrder(false)"
+            >
+              No
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="approveOrder(true)"
+            >
+              Si
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
+
+
     <v-dialog
       v-model="active"
       fullscreen
@@ -215,7 +257,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
               dark
               text
               v-show="purchase.state_id == 2"
-              @click="approveOrder"
+              @click="approveOrderDialog"
             >
             Aprobar
             <v-icon>mdi-clipboard-check</v-icon>
