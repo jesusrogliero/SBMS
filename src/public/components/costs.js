@@ -26,6 +26,7 @@ let costs = Vue.component('costs', {
       { text: 'Acciones', value: 'actions', sortable: false },
     ],
     costs: [],
+    currency_symbol: "",
     editedIndex: -1,
     editedItem: {},
   }),
@@ -70,8 +71,15 @@ let costs = Vue.component('costs', {
       this.editedItem.product_id = value;
     },
 
-    getSelectCurrency: function(value) {
+    getSelectCurrency: async function(value) {
       this.editedItem.currency_id = value;
+      let result = await execute('show-currency-symbol', value);
+
+      if(result.code == 0) 
+        alertApp({color:"error", text: result, icon: "alert" }); 
+      
+      this.currency_symbol = result.symbol;
+      
     },
 
     format: function(val) {
@@ -267,6 +275,7 @@ let costs = Vue.component('costs', {
                   <v-text-field
                     v-model="editedItem.cost"
                     label="Ingresa el Costo"
+                    :prefix="currency_symbol"
                   ></v-text-field>
                 </v-col>
 
