@@ -3,30 +3,38 @@ const { loadMethods } = require('./methods');
 const dirs = require('./dirs');
 require('events').EventEmitter.defaultMaxListeners = 15;
 
+
+
 // funcion de inicio de la aplicacion
 const main = function () {
   // cargando ventana
   const win = new BrowserWindow({
-    width: 1100,
-    height: 800,
-    minWidth: 1100,
-    minHeight: 800,
+    show:false,
+    minWidth: 1110,
+    minHeight: 900,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
     },
   });
 
+  win.maximize();
   win.setMenuBarVisibility(false)
   win.loadFile(dirs.public + 'index.html');
 
 
-  // cargando el listo de archivos
+  // cargando el listado de archivos
   const fs = require('fs');
   fs.readdir(dirs.methods, (error, files) => {
     if (!error) loadMethods(files);
     else console.error(error);
   });
+
+  win.once('ready-to-show', () => {
+    win.show();
+  });
+
 };
 
 app.whenReady().then(() => main());
+
