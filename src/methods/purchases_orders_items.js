@@ -60,7 +60,7 @@ const purchase_orders_items = {
 
 			
 			if(order.state_id != 1)
-				throw new Error('No es posible editar esta orden de ingreso porque ya fue procesada');
+				throw new Error('Lo siento esta orden ya fue generada o aprobada');
 
 
 			// busco si ya existe el producto en la orden
@@ -156,7 +156,7 @@ const purchase_orders_items = {
 
 			const order = await PurchaseOrder.findByPk(item.purchase_order_id);
 
-			if( order.state_id != 1) throw new Error('Esta orden ya fue procesada');
+			if( order.state_id != 1) throw new Error('Lo siento esta orden ya fue generada o aprobada');
 
 			// elimino los datos anteriores
 			order.tax_amount = order.tax_amount - item.tax_amount; 
@@ -206,7 +206,7 @@ const purchase_orders_items = {
 
             const order = await PurchaseOrder.findByPk(item.purchase_order_id);
 
-            if(order.state_id != 1) throw new Error("Esta orden ya fue procesada");
+            if(order.state_id != 1) throw new Error("Lo siento esta orden ya fue generada o aprobada");
 
 			// actualizo la orden
 			order.total = order.total - item.total;
