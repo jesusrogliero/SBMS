@@ -1,8 +1,10 @@
 const {DataTypes } = require("sequelize");
 const sequelize = require('../connection.js');
+const seed = require
+const ProductType = require("./ProductType.js");
 const Tax = require('./Tax.js');
 
-const Products = sequelize.define("products", {
+const Product = sequelize.define("products", {
     id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,
@@ -36,6 +38,21 @@ const Products = sequelize.define("products", {
             }
         }
     },
+
+    product_type_id: {
+        type: DataTypes.NUMBER,
+        allowNull: false,
+        validate: {
+            isNumeric: {
+                msg: "Debes ingresar un tipo de producto valido (unidad o combo)"
+            },
+            notNull: {
+                msg: "Debes ingresar un tipo de producto"
+            }
+        }
+    },
+
+
     taxId: {
         type: DataTypes.NUMBER,
         allowNull: false,
@@ -70,7 +87,7 @@ const Products = sequelize.define("products", {
     }
 });
 
-Products.belongsTo(Tax);
+Product.belongsTo(Tax);
+Product.belongsTo(ProductType, {foreignKey: 'product_type_id'});
 
-
-module.exports = Products;
+module.exports = Product;
