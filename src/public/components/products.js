@@ -93,7 +93,6 @@ let products = Vue.component('products', {
 
     getSelectTaxe: function(value) {
         this.editedItem.taxId = value;
-        console.log(value);
     },
 
     getSelectProductType: function(value) {
