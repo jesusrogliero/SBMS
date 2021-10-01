@@ -69,7 +69,6 @@ const purchase_orders = {
             const new_order =  await PurchaseOrder.create({
                 observation: params.observation,
                 date: params.date,
-				tax: params.tax,
 				state_id: 1,
                 provider_id: params.provider_id,
                 currency_id: params.currency_id,
