@@ -73,6 +73,10 @@ let costs = Vue.component('costs', {
     getSelectCurrency: function(value) {
       this.editedItem.currency_id = value;
     },
+
+    format: function(val) {
+      return formatMoney(val);
+    },
     
     editItem: async function(item) {
       this.editedIndex = item.id
@@ -312,6 +316,7 @@ let costs = Vue.component('costs', {
     >
       mdi-pencil
     </v-icon>
+    <!--
     <v-icon
       dense
       @click="deleteItem(item)"
@@ -319,6 +324,11 @@ let costs = Vue.component('costs', {
     >
       mdi-delete
     </v-icon>
+    !-->
+  </template>
+
+  <template v-slot:item.cost="{ item }">
+      {{format(item.cost) + ' ' + item.currency_symbol}}
   </template>
 
 </v-data-table>
