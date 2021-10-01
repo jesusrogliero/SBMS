@@ -2,3 +2,4 @@
 package-lock.json
 data/data.db
 /dist
+yarn.lock
