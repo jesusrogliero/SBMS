@@ -1,40 +1,86 @@
 'use strict'
 
+const sequelize = require('sequelize');
 const empty = require('../helpers/empty.js');
 const Product = require('../models/Product.js');
 const Tax = require('../models/Tax.js');
-const sequelize = require('sequelize');
+const ProductType = require('../models/ProductType.js');
+const ProductCost = require('../models/ProductCost.js');
+const ComboItem = require('../models/ComboItem.js');
+const Currency = require('../models/Currency.js');
 
 let products = {
 
     /**
-     * Ruta que muestra todos los empleados
+     * Ruta que muestra todos los recursos
      * 
-     * @returns productsa
+     * @returns products
      */
      'index-products': async function() {
-
-        //return await Product.findAll({raw:true});
 
         return await Product.findAll({
             attributes: {
                 include: [
-                    [sequelize.col('tax.percentage'), 'percentage']
+                    [sequelize.col('tax.percentage'), 'percentage'],
+                    [sequelize.col('products_type.type'), 'product_type'],
+                    [sequelize.col('products_type.id'), 'product_type_id']
                 ],
             },
-            include: {
-                model: Tax,
-                required: true,
-                attributes: []
-            },
+            include: [
+                {
+                    model: Tax,
+                    required: true,
+                    attributes: []
+                },
+                {
+                    model: ProductType,
+                    required: true,
+                    attributes: []
+                }
+            ],
             raw:true
         });
 
     },
 
 
+     /**
+     * Ruta que muestra todos los productos normales
+     * 
+     * @returns products
+     */
+      'index-products-standar': async function() {
+
+        return await Product.findAll({
+            attributes: {
+                include: [
+                    [sequelize.col('tax.percentage'), 'percentage'],
+                    [sequelize.col('products_type.type'), 'product_type'],
+                    [sequelize.col('products_type.id'), 'product_type_id']
+                ],
+            },
+            include: [
+                {
+                    model: Tax,
+                    required: true,
+                    attributes: []
+                },
+                {
+                    model: ProductType,
+                    required: true,
+                    attributes: []
+                }
+            ],
+            where: {
+                product_type_id: 1
+            },
+            raw:true
+        });
+
+    },
+
     /**
-     * Metodo que crea un nuevo producto
+     * Metodo que crea un nuevo recurso
      * 
      * @param {Json} params 
      * @returns message
@@ -45,11 +91,38 @@ let products = {
 
             if(params.stock < 0) throw new Error('La existencia debe ser mayor a 0');
 
-            await Product.create({
+            const product = await Product.create({
                 name: params.name,
                 stock: params.stock,
                 taxId: params.taxId,
+                product_type_id: params.product_type_id
             });
+
+            if(!empty(params.items)) {
+
+                if( empty(params.cost_combo) || params.cost_combo < 0)
+                    throw new Error('Debes ingresar el costo del combo');
+                
+                for (let i = 0; i < params.items.length; i++) {
+
+                    if( params.items[i].quantity < 1)
+                        throw new Error('Debes especificar la cantidad de producto que deseas agregar al combo');
+
+                    await ComboItem.create({
+                        combo_id: product.id,
+                        product_id: params.items[i].product_id,
+                        quantity: params.items[i].quantity
+                    });
+                }
+
+
+                await ProductCost.create({
+                    product_id: product.id,
+                    currency_id: 1,
+                    cost: params.cost_combo
+                });
+
+            }
     
             return {message: "Agregado con exito", code: 1};
         
@@ -61,10 +134,50 @@ let products = {
         }
 
     },
+
     
+    /**
+     * funcion que muestra la informacion de un producto
+     * 
+     * @param {int} id 
+     * @returns {json} product
+     */
+    'get_product_info': async function(params) {
+        try {
+
+            if( empty(params.id) ) throw new Error('Debes seleccionar un producto');
+            if( empty(params.quantity) ) throw new Error('Debes ingresar que catidad sera incluida en el combo');
+            if( params.quantity < 1 ) throw new Error('La cantidad de producto ingresada no es correcta');
+
+            const product = await Product.findByPk(params.id);
+
+            const cost = await ProductCost.findOne({
+                where: {
+                    currency_id: 1,
+                    product_id: product.id
+                }
+            });
+
+            const currency = await Currency.findByPk(1);
+
+            let data = {
+                product_id: product.id,
+                name: product.name,
+                price: cost.cost * params.quantity,
+                quantity: params.quantity,
+                currency_symbol: currency.symbol
+            }
+            return {data, code:1};
+
+        }catch(error) {
+            console.error(error);
+            return {message: error.message, code: 0};
+        }
+    },
+
 
     /**
-     * funcion que muestra un producto
+     * funcion que muestra un recurso
      * 
      * @param {int} id 
      * @returns {json} product
@@ -75,9 +188,45 @@ let products = {
 
             if(product === null) throw new Error("Este producto no existe");
 
+            let items = null;
+
+            if(product.product_type_id === 2) {
+
+                items = await ComboItem.findAll({
+                    attributes: {
+                        include: [
+                            [sequelize.col('product.name'), 'name'],
+                        ],
+                    },
+                    include: [
+                        {
+                            model: Product,
+                            required: true,
+                            attributes: []
+                        },
+                    ],
+                    where:{
+                        combo_id: product.id
+                    },
+                    raw: true
+                });
+
+                let cost_combo = await ProductCost.findOne({
+                    where: {
+                        product_id: product.id
+                    }
+                });
+
+                product.cost_combo = cost_combo.cost;
+            }
+
+            product.items = items;
+            
+            console.log(product);
             return product;
 
         }catch(error) {
+            console.error(error);
             return {message: error.message, code: 0};
         }
     },
@@ -85,7 +234,7 @@ let products = {
 
 
     /**
-     * funcion que actualiza los datos de un producto
+     * funcion que actualiza los datos de un recurso
      * 
      * @param {*} params 
      * @returns 
@@ -100,24 +249,44 @@ let products = {
             if(empty(params.taxId)) throw new Error("El impuesto del producto es Obligatorio");
             if(params.stock < 0) throw new Error("La existencia debe ser mayor a 0");
 
-            // busco los datos del del empleado
+            // busco los datos del producto
             let product = await Product.findByPk(params.id);
 
             // verifico que exista
-            if(product === null) {
+            if(product === null) 
                 throw new Error("Este producto no existe");
-            }
+            
 
             // actualizo la informacion
             product.name = params.name;
             product.stock = params.stock;
             product.taxId = params.taxId;
 
+            // en caso que se actualice un combo
+            if( product.product_type_id === 2) {
+
+                for (let i = 0; i < params.items.length; i++) {
+                    
+                    let item = await ComboItem.findOne({
+                        where:{
+                            combo_id: product.id,
+                            product_id: params.items[i].product_id
+                        }
+                    });
+
+                    item.product_id = params.items[i].product_id;
+                    item.quantity = params.items[i].quantity;
+
+                    await item.save();
+                }
+            }
+
             product.save();
 
             return { message: "Actualizado Correctamente", code: 1 };
 
         } catch (error) {
+            console.error(error);
             return { message: error.message, code: 0 };
         }
 
@@ -126,7 +295,7 @@ let products = {
     
 
     /**
-     * funcion que elimina a un empleado
+     * funcion que elimina a un recurso
      * 
      * @param {*} params 
      * @returns 
