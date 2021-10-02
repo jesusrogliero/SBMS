@@ -10,6 +10,7 @@ let routes = [
     {path: "/purchases_orders", component: () => import("./components/purchasesOrders.js") },
     {path: "/providers", component: () => import("./components/providers.js") },
     {path: "/costs", component: () => import("./components/costs.js") },
+    {path: "/invoices", component: () => import("./components/invoices.js") },
 
 ];
 
