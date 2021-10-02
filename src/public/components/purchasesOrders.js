@@ -3,8 +3,8 @@
 import './dialog/purchases_orders_dialog.js';
 import '../utils/autocomplete.js';
 
-// componente home
-let costs = Vue.component('purchases-orders', {
+// componente de ingresos
+let purchases = Vue.component('purchases-orders', {
 
   data: () => ({
     dialog: false,
@@ -406,4 +406,4 @@ let costs = Vue.component('purchases-orders', {
   `
 });
 
-export default costs;
+export default purchases;
