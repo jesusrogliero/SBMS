@@ -29,6 +29,8 @@ let navigation = Vue.component('navigation', {
 
         toCosts: function() { this.$router.push('/costs')},
 
+        toInvoices: function() { this.$router.push('/invoices')},
+
     },
 
 
@@ -43,7 +45,7 @@ let navigation = Vue.component('navigation', {
     <v-list-item>
         <v-list-item-content>
         <v-list-item-title style="color: white;" class="text-h6">
-            LA Bodega C.A
+            Bienvenido Admin
         </v-list-item-title>
         </v-list-item-content>
     </v-list-item>
@@ -158,7 +160,7 @@ let navigation = Vue.component('navigation', {
             <v-icon class="" color="#8e97a5">mdi-file-document</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-content>
+        <v-list-item-content @click="toInvoices">
             <v-list-item-title class="text-body-1" style="color: white;">Facturas</v-list-item-title>
         </v-list-item-content>
     </v-list-item>
