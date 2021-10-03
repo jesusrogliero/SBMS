@@ -66,7 +66,7 @@ const invoices = {
 	 'create-invoice': async function(params) {
         try {
 
-			let order = Invoice.findAll({
+			let order = Invoice.findOne({
 				where: {
 					client_id: params.client_id,
 					state_id: 1
@@ -74,8 +74,8 @@ const invoices = {
 				raw: true
 			});
 
-			if( order.length !== 0 )
-				throw new Error('Este cliente ya tiene una venta pendiente');
+			if( order.state_id === 1 )
+				throw new Error(`Este cliente ya tiene una venta pendiente: Orden Nº ${order.id}`);
 
             // creo una nueva compra
             order =  await Invoice.create({
@@ -138,6 +138,8 @@ const invoices = {
 			items.forEach(async (item) => {
 				let product = await Product.findByPk(item.product_id);
 
+				console.log(product);
+
 				// si se trata de un combo
 				if(product.product_type_id === 2) {
 					let comboItems = await ComboItem.findAll({
@@ -162,14 +164,14 @@ const invoices = {
 							
 					});
 				}
-			});
 
+
+				if( (product.stock - item.quantity) <= 0 )
+				throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
 			
-			if( (product.stock - item.quantity) <= 0 )
-			throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
-		
-			product.stock = product.stock + item.quantity;
-			await product.save();
+				product.stock = product.stock - item.quantity;
+				await product.save();
+			});
 
 			order.state_id = 3;
 			await order.save();
@@ -215,7 +217,7 @@ const invoices = {
 	 */
 	'destroy-invoice': async function(id) {
 		try {
-			let order = await PurchaseOrder.findByPk(id);
+			let order = await Invoice.findByPk(id);
 
 			if( empty(order) ) throw new Error("Esta venta no existe");
 
