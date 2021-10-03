@@ -9,6 +9,7 @@ const ProductCost = require('../models/ProductCost.js');
 const ComboItem = require('../models/ComboItem.js');
 const Currency = require('../models/Currency.js');
 const Prices = require('../models/Price.js');
+const createCosts = require('./products_costs.js')['create-cost'];
 
 let products = {
 
@@ -116,12 +117,13 @@ let products = {
                     });
                 }
 
-
-                await ProductCost.create({
+                let result = await createCosts({
                     product_id: product.id,
                     currency_id: 1,
                     cost: params.cost_combo
                 });
+
+                console.log(result);
 
             }
     
@@ -344,7 +346,10 @@ let products = {
                 }
             }
 
-            product.save();
+            await product.save();
+
+
+            
 
             return { message: "Actualizado Correctamente", code: 1 };
 
