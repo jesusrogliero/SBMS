@@ -116,7 +116,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
     },
 
     approveOrder: async function() {
-      let result = await execute('approve-invoice', {id: this.id});
+      let result = await execute('approve-invoice', this.id);
 
       if(result.code == 1) {
         alertApp({color:"success", text: result, icon: "check" }); 
@@ -216,7 +216,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>Detalles de la Orden de Ingreso</v-toolbar-title>
+          <v-toolbar-title>Detalles de la Venta</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn
