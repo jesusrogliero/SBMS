@@ -72,7 +72,7 @@ const products_costs = {
                 if( empty(product_cost) ) {
                     product_cost = ProductCost.build({
                         currency_id: currency.id,
-                        product_id: item.product_id,
+                        product_id: params.product_id,
                     });
                 }
 
