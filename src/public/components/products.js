@@ -130,6 +130,7 @@ let products = Vue.component('products', {
 
         if(prd.code == 0){
           alertApp({color:"error", text: prd, icon: "alert" });
+          return;
         }
 
         this.editedItem.items.push(prd.data);
