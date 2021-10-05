@@ -112,38 +112,44 @@ const purchase_orders = {
 	 * @returns message
 	 */
 	'approve-purchase': async function(params) {
+	
 		try {
-			if( empty(params.id) ) throw new Error('Ocurrio un error al aprobar tu orden');
+			return await PurchaseOrder.sequelize.transaction(async (t) => {
 
-			const order = await PurchaseOrder.findByPk(params.id);
-			
-			if( empty(order) ) throw new Error("Esta orden de compra no existe");
+				if( empty(params.id) ) throw new Error('Ocurrio un error al aprobar tu orden');
 
-			if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
+				const order = await PurchaseOrder.findByPk(params.id);
+				
+				if( empty(order) ) throw new Error("Esta orden de compra no existe");
+				if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
+				if( order.total_products === 0 ) throw new Error("No es posible aprobar una orden sin productos");
+	
+				let items = await PurchaseOrderItem.findAll({
+					where: { purchase_order_id: order.id },
+					raw: true
+				});
+	
+				items.forEach(async (item) => {
+					let product = await Product.findByPk(item.product_id);
+					product.stock = product.stock + item.quantity;
+					await product.save({transaction: t});
+				});
+	
+		
+				if(params.generate_cost === true) {
+					let result = await generate_product_cost(order, items);
+					if( result !== true) throw new Error(result.message);
+				}
+				
 
-			let items = await PurchaseOrderItem.findAll({
-				where: { purchase_order_id: order.id },
-				raw: true
+				order.state_id = 3;
+				await order.save({transaction: t});
+				
+				return {message: "La orden fue ingresada correctamente", code: 1 };
 			});
-
-			items.forEach(async (item) => {
-				let product = await Product.findByPk(item.product_id);
-				product.stock = product.stock + item.quantity;
-				await product.save();
-			});
-
-			
-			if(params.generate_cost === true) {
-				let result = await generate_product_cost(order, items);
-				if( result !== true) throw new Error(result.message);
-			}
-
-			order.state_id = 3;
-			await order.save();
-			
-			return {message: "La orden fue ingresada correctamente", code: 1 };
             
 		} catch (error) {
+			console.log(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -161,6 +167,8 @@ const purchase_orders = {
 			let order = await PurchaseOrder.findByPk(id);
 
 			if( empty(order) ) throw new Error("Esta orden de compra no existe");
+			
+			if( order.total_products === 0 ) throw new Error("No es posible generar una orden sin productos");
 
 			order.state_id = 2;
 			await order.save();
@@ -181,21 +189,27 @@ const purchase_orders = {
 	 */
 	'destroy-purchase': async function(id) {
 		try {
+
+			return await PurchaseOrder.sequelize.transaction(async (t) => {
+				
 			let order = await PurchaseOrder.findByPk(id);
 
-			if( empty(order) ) throw new Error("Esta compra no existe");
-
-            if(order.state_id != 1) throw new Error("Esta orden ya fue procesada");
-
-			await PurchaseOrderItem.destroy({
-				where: {
-					purchase_order_id: order.id
-				}
+				if( empty(order) ) throw new Error("Esta compra no existe");
+	
+				if(order.state_id != 1) throw new Error("Esta orden ya fue procesada");
+	
+				await PurchaseOrderItem.destroy({
+					where: {
+						purchase_order_id: order.id
+					},
+					transaction: t
+				});
+	
+				await order.destroy({transaction: t});
+	
+				return {message: "Eliminado Correctamente", code: 1};
 			});
 
-			await order.destroy();
-
-			return {message: "Eliminado Correctamente", code: 1};
 
 		} catch (error) {
 			return {message: error.message, code: 0};
