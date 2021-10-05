@@ -38,6 +38,7 @@ const Currency = sequelize.define("currencies", {
     exchange_rate: {
         type: DataTypes.NUMBER,
         allowNull: false,
+        defaultValue: 2,
         validate: {
             isNumeric: {
                 args: true,
