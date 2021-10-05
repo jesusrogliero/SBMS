@@ -50,39 +50,38 @@ const products_costs = {
      */
 	 'create-cost': async function(params) {
         try {
+                if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
 
-            if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
+                // busco todas las monedas
+                const currencies =  await Currency.findAll();
+                const currency_cost = await Currency.findByPk(params.currency_id); 
+    
+                currencies.forEach( async (currency) => {
 
-            // busco todas las monedas
-            const currencies =  await Currency.findAll();
-            const currency_cost = await Currency.findByPk(params.currency_id); 
-
-            currencies.forEach( async (currency) => {
-                let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
-                
-                let product_cost = await ProductCost.findOne({
-                    where:{
-                        product_id: params.product_id,
-                        currency_id: currency.id
-                    }
-                });
-
-
-                // si el costo no existe se genera uno nuevo
-                if( empty(product_cost) ) {
-                    product_cost = ProductCost.build({
-                        currency_id: currency.id,
-                        product_id: params.product_id,
+                    let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
+                    
+                    let product_cost = await ProductCost.findOne({
+                        where:{
+                            product_id: params.product_id,
+                            currency_id: currency.id
+                        }
                     });
-                }
-
-                product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
-
-                await product_cost.save();
-            });
-
-            return {message: "Costos Generados Correctamente", code: 1};
-
+    
+    
+                    // si el costo no existe se genera uno nuevo
+                    if( empty(product_cost) ) {
+                        product_cost = ProductCost.build({
+                            currency_id: currency.id,
+                            product_id: params.product_id,
+                        });
+                    }
+    
+                    product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
+    
+                    await product_cost.save();
+                });
+                return {message: "Costos Generados Correctamente", code: 1};
+            
         } catch (error) {
             if( !empty( error.errors ) )
                 return {message: error.errors[0].message, code: 0};
@@ -92,7 +91,7 @@ const products_costs = {
     },
 
 
-     /**
+    /**
      * Metodo que actualiza un nuevo recurso
      * 
      * @param {Json} params 
@@ -101,38 +100,41 @@ const products_costs = {
 	 'update-cost': async function(params) {
         try {
 
-            if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
-            if( empty(params.currency_id) ) throw new Error('Debes seleccionar una moneda');
-            if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
+            return await ProductCost.sequelize.transaction(async (t) => {
 
-            // busco todas las monedas
-            const currencies =  await Currency.findAll();
-            const currency_cost = await Currency.findByPk(params.currency_id); 
-
-            currencies.forEach( async (currency) => {
-                let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
-                
-                let product_cost = await ProductCost.findOne({
-                    where:{
-                        product_id: params.product_id,
-                        currency_id: currency.id
-                    }
-                });
-
-                // si el costo no existe se genera uno nuevo
-                if( empty(product_cost) ) {
-                    product_cost = ProductCost.build({
-                        currency_id: currency.id,
-                        product_id: params.product_id,
+                if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
+                if( empty(params.currency_id) ) throw new Error('Debes seleccionar una moneda');
+                if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
+    
+                // busco todas las monedas
+                const currencies =  await Currency.findAll();
+                const currency_cost = await Currency.findByPk(params.currency_id); 
+    
+                currencies.forEach( async (currency) => {
+                    let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
+              
+                    let product_cost = await ProductCost.findOne({
+                        where:{
+                            product_id: params.product_id,
+                            currency_id: currency.id
+                        }
                     });
-                }
-
-                product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
-
-                await product_cost.save();
+    
+                    // si el costo no existe se genera uno nuevo
+                    if( empty(product_cost) ) {
+                        product_cost = ProductCost.build({
+                            currency_id: currency.id,
+                            product_id: params.product_id,
+                        });
+                    }
+    
+                    product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
+    
+                    await product_cost.save({transaction: t});
+                });
+    
+                return {message: "Costos actualizados correctamente", code: 1};
             });
-
-            return {message: "Costos actualizados correctamente", code: 1};
 
         } catch (error) {
             if( !empty( error.errors ) )
