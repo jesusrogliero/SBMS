@@ -10,6 +10,7 @@ const ComboItem = require('../models/ComboItem.js');
 const Currency = require('../models/Currency.js');
 const Prices = require('../models/Price.js');
 const createCosts = require('./products_costs.js')['create-cost'];
+const updateCosts = require('./products_costs.js')['update-cost'];
 
 let products = {
 
@@ -91,43 +92,48 @@ let products = {
 
         try {
 
-            if(params.stock < 0) throw new Error('La existencia debe ser mayor a 0');
+            return await Product.sequelize.transaction(async (t) => {
+                
+                if(params.stock < 0) throw new Error('La existencia debe ser mayor a 0');
 
-            const product = await Product.create({
-                name: params.name,
-                stock: params.stock,
-                taxId: params.taxId,
-                product_type_id: params.product_type_id
+                const product = await Product.create({
+                    name: params.name,
+                    stock: params.stock,
+                    taxId: params.taxId,
+                    product_type_id: params.product_type_id
+                }, {transaction: t});
+
+                if(params.product_type_id === 2) {
+
+                    if( empty(params.cost_combo) || params.cost_combo < 0)
+                        throw new Error('Debes ingresar el costo del combo');
+                    
+                    for (let i = 0; i < params.items.length; i++) {
+
+                        if( params.items[i].quantity < 1)
+                            throw new Error('Debes especificar la cantidad de producto que deseas agregar al combo');
+
+                        await ComboItem.create({
+                            combo_id: product.id,
+                            product_id: params.items[i].product_id,
+                            quantity: params.items[i].quantity
+                        }, {transaction: t});
+                    }
+
+                    let result = await createCosts({
+                        product_id: product.id,
+                        currency_id: 1,
+                        cost: params.cost_combo,
+                    });
+
+                    if(result.code === 0) throw new Error(result.message);
+
+                }
+        
+                return {message: "Agregado con exito", code: 1};
+
             });
 
-            if(!empty(params.items)) {
-
-                if( empty(params.cost_combo) || params.cost_combo < 0)
-                    throw new Error('Debes ingresar el costo del combo');
-                
-                for (let i = 0; i < params.items.length; i++) {
-
-                    if( params.items[i].quantity < 1)
-                        throw new Error('Debes especificar la cantidad de producto que deseas agregar al combo');
-
-                    await ComboItem.create({
-                        combo_id: product.id,
-                        product_id: params.items[i].product_id,
-                        quantity: params.items[i].quantity
-                    });
-                }
-
-                let result = await createCosts({
-                    product_id: product.id,
-                    currency_id: 1,
-                    cost: params.cost_combo
-                });
-
-                console.log(result);
-
-            }
-    
-            return {message: "Agregado con exito", code: 1};
         
         } catch (error) {
             if( !empty( error.errors ) )
@@ -223,6 +229,8 @@ let products = {
                 }
             });
 
+            if( empty(cost) ) throw new Error('Este producto aun no tiene un costo definido');      
+
             const currency = await Currency.findByPk(1);
 
             let data = {
@@ -307,52 +315,62 @@ let products = {
     'update-product': async function(params) {
 
         try {
-            
-            // valido que hayan llegado bien los datos
-            if(empty(params.name)) throw new Error("El nombre del producto es obligatorio");
-            if(empty(params.stock)) throw new Error("La existencia del producto es obligatoria");
-            if(empty(params.taxId)) throw new Error("El impuesto del producto es Obligatorio");
-            if(params.stock < 0) throw new Error("La existencia debe ser mayor a 0");
 
-            // busco los datos del producto
-            let product = await Product.findByPk(params.id);
+            return await ProductCost.sequelize.transaction(async (t) => {
 
-            // verifico que exista
-            if(product === null) 
-                throw new Error("Este producto no existe");
-            
+                // valido que hayan llegado bien los datos
+                if(empty(params.name)) throw new Error("El nombre del producto es obligatorio");
+                if(empty(params.stock)) throw new Error("La existencia del producto es obligatoria");
+                if(empty(params.taxId)) throw new Error("El impuesto del producto es Obligatorio");
+                if(params.stock < 0) throw new Error("La existencia debe ser mayor a 0");
 
-            // actualizo la informacion
-            product.name = params.name;
-            product.stock = params.stock;
-            product.taxId = params.taxId;
+                // busco los datos del producto
+                let product = await Product.findByPk(params.id);
 
-            // en caso que se actualice un combo
-            if( product.product_type_id === 2) {
+                // verifico que exista
+                if(product === null) 
+                    throw new Error("Este producto no existe");
+                
 
-                for (let i = 0; i < params.items.length; i++) {
-                    
-                    let item = await ComboItem.findOne({
-                        where:{
-                            combo_id: product.id,
-                            product_id: params.items[i].product_id
-                        }
-                    });
+                // actualizo la informacion
+                product.name = params.name;
+                product.stock = params.stock;
+                product.taxId = params.taxId;
 
-                    item.product_id = params.items[i].product_id;
-                    item.quantity = params.items[i].quantity;
+                // en caso que se actualice un combo
+                if( product.product_type_id === 2) {
 
-                    await item.save();
+                    for (let i = 0; i < params.items.length; i++) {
+                        
+                        let item = await ComboItem.findOne({
+                            where:{
+                                combo_id: product.id,
+                                product_id: params.items[i].product_id
+                            }
+                        });
+
+                        item.product_id = params.items[i].product_id;
+                        item.quantity = params.items[i].quantity;
+
+                        await item.save({transaction: t});
+                    }
                 }
-            }
 
-            await product.save();
+                await product.save({transaction: t});
+
+                let result = await updateCosts({
+                    product_id: product.id,
+                    cost: params.cost_combo,
+                    currency_id: 1
+                });
+
+                if( result.code === 0 ) throw new Error(result.message);
 
 
+                return { message: "Actualizado Correctamente", code: 1 };
             
-
-            return { message: "Actualizado Correctamente", code: 1 };
-
+            });
+            
         } catch (error) {
             console.error(error);
             return { message: error.message, code: 0 };
@@ -370,14 +388,28 @@ let products = {
      */
     'destroy-product': async function destroy(id) {
         try {
-            let product = await product.findByPk(id);
 
-            if (product === null) throw new Error("El producto no existe");
-            
-            // elimino el producto
-            product.destroy();
+            return await Product.sequelize.transaction(async (t) => {
 
-            return { message: error.message, code: 1 };
+                let product = await Product.findByPk(id);
+
+                if (product === null) throw new Error("El producto no existe");
+    
+                if( product.product_type_id === 2) {
+                    const combo_items = await ComboItem.destroy({
+                        where: {
+                            combo_id: product.id
+                        },
+                        transaction: t
+                    });
+                }
+                
+                // elimino el producto
+                await product.destroy({transaction: t});
+
+                return { message: "Eliminado correctamente", code: 1 };
+            });
+
 
         } catch (error) {
             return { message: error.message, code: 0 };
