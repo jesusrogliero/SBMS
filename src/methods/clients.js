@@ -2,6 +2,7 @@
 
 const Client = require('../models/Client.js');
 const empty = require('../helpers/empty.js');
+const log = require('electron-log');
 
 const clients = {
 
@@ -14,6 +15,7 @@ const clients = {
 		try {
 			return await Client.findAll({raw:true});
 		} catch (error) {
+			log.error(error.message);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -44,10 +46,16 @@ const clients = {
 
             return {message: "Agregado con exito", code: 1};
         } catch (error) {
-			if( !empty( error.errors ) )
+
+			if( !empty( error.errors ) ){
+				log.error(error.errors[0].message);
 				return {message: error.errors[0].message, code: 0};
-			else
+			}	
+			else{
+				log.error(error.errors[0].message);
 				return { message: error.message, code: 0 };
+			}
+				
         }
     },
 
@@ -67,6 +75,7 @@ const clients = {
 			return client;
 
 		} catch (error) {
+			log.error(error.message);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -99,6 +108,7 @@ const clients = {
 			return {message: "Actualizado Correctamente", code: 1};
 			
 		} catch (error) {
+			log.error(error.message);
 			return { message: error.message, code: 0 };
 		}
 	},
@@ -122,6 +132,7 @@ const clients = {
 			return {message: "Eliminado Correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error.message);
 			return {message: error.message, code: 0};
 		}
 	}
