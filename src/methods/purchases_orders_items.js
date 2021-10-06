@@ -1,11 +1,12 @@
 'use strict'
 
-const PurchaseOrderItem = require('../models/PurchaseOrderItem.js');
-const PurchaseOrder = require('../models/PurchaseOrder.js');
-const Product = require('../models/Product.js');
 const empty = require('../helpers/empty.js');
 const {Op} = require('sequelize');
 const sequelize = require('sequelize');
+const log = require('electron-log');
+const PurchaseOrderItem = require('../models/PurchaseOrderItem.js');
+const PurchaseOrder = require('../models/PurchaseOrder.js');
+const Product = require('../models/Product.js');
 
 const purchase_orders_items = {
 
@@ -34,6 +35,7 @@ const purchase_orders_items = {
             });
 
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -107,10 +109,14 @@ const purchase_orders_items = {
 			return {message: "Agregado con exito", code: 1};
             
         } catch (error) {
-			if( !empty( error.errors ) )
+			if( !empty( error.errors ) ) {
+				log.error(error.errors[0]);
 				return {message: error.errors[0].message, code: 0};
-			else
+			}else {
+				log.error(error);
 				return { message: error.message, code: 0 };
+			}
+				
         }
     },
 
@@ -130,6 +136,7 @@ const purchase_orders_items = {
 			return item;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -186,6 +193,7 @@ const purchase_orders_items = {
 			return {message: "Actualizado Correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -220,6 +228,7 @@ const purchase_orders_items = {
 			return {message: "Eliminado Correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
