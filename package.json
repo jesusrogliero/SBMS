@@ -33,6 +33,7 @@
     "eslint-plugin-react": "^7.26.0"
   },
   "dependencies": {
+    "electron-log": "^4.4.1",
     "sequelize": "^6.6.5",
     "sqlite3": "^5.0.2"
   }
