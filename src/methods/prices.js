@@ -2,6 +2,7 @@
 
 const empty = require('../helpers/empty.js');
 const Price = require('../models/Price.js');
+const log = require('electron-log');
 
 
 const prices = {
@@ -24,6 +25,7 @@ const prices = {
 			});
 
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -54,10 +56,16 @@ const prices = {
             return {message: "Agregado con exito", code: 1};
             
         } catch (error) {
-			if( !empty( error.errors ) )
+			
+			if( !empty( error.errors ) ) {
+				log.error(error.errors[0]);
 				return {message: error.errors[0].message, code: 0};
-			else
+			
+			}else {
+				log.error(error);
 				return { message: error.message, code: 0 };
+			}
+
         }
     },
 
@@ -81,6 +89,7 @@ const prices = {
 			return price;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -123,6 +132,7 @@ const prices = {
 			return {message: "Actualizado Correctamente", code: 1};
 			
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code: 0 };
 		}
 	},
@@ -149,6 +159,7 @@ const prices = {
 			return {message: "Eliminado Correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
