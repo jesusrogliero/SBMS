@@ -2,8 +2,12 @@ const { ipcMain } = require('electron');
 const { Queue } = require('./utils/queue');
 const sleep = require('./utils/sleep');
 const dirs = require('./dirs');
+const log = require('electron-log');
 const methodsLoaded = {};
 const nodes = Queue();
+
+
+ipcMain.setMaxListeners(15);
 
 const loadMethods = function (files) {
   try {
@@ -48,7 +52,7 @@ const executeMethod = async function ({ name, params }) {
       aux = nodes.front();
     }
 
-    console.log('Method executing...\n', { name: aux.name, params: aux.params }, '\n\n');
+    log.info('Method executing...\n', { name: aux.name, params: aux.params }, '\n\n');
 
     const method = methodsLoaded[aux.name];
     if (!method) throw 'Disculpe el metodo no ha sido encontrado';
@@ -67,6 +71,7 @@ const executeMethod = async function ({ name, params }) {
     time = Date.now() - time;
     return { response, time };
   } catch (error) {
+    log.error(error);
     console.error(error);
     throw error;
   } finally {
