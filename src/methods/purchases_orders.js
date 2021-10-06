@@ -1,6 +1,7 @@
 'use strict'
 
 const sequelize = require('sequelize');
+const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const PurchaseOrder = require('../models/PurchaseOrder.js');
 const Currency = require('../models/Currency.js');
@@ -49,7 +50,7 @@ const purchase_orders = {
 			});
 
 		} catch (error) {
-	
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -77,10 +78,15 @@ const purchase_orders = {
             return {message: "Agregado con exito", code: 1};
             
         } catch (error) {
-			if( !empty( error.errors ) )
+			if( !empty( error.errors ) ) {
+				log.error(error.errors[0]);
 				return {message: error.errors[0].message, code: 0};
-			else
+			
+			}else {
+				log.error(error);
 				return { message: error.message, code: 0 };
+			}
+				
         }
     },
 
@@ -100,6 +106,7 @@ const purchase_orders = {
 			return order;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -149,7 +156,7 @@ const purchase_orders = {
 			});
             
 		} catch (error) {
-			console.log(error);
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -176,6 +183,7 @@ const purchase_orders = {
 			return {message: "La orden fue generada correctamente", code: 1 };
 			
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -212,6 +220,7 @@ const purchase_orders = {
 
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
