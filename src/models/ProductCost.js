@@ -62,6 +62,17 @@ const ProductCost = sequelize.define("products_costs", {
     cost: {
         type: DataTypes.DECIMAL,
         allowNull: false,
+        validate: {
+            notNull: {
+                msg: "Ingresa el costo de producto"
+            },
+            isDecimal: {
+                msg: "El costo ingresado es incorrecto"
+            },
+            notEmpty: {
+               msg: "Ingresa el costo del producto" 
+            }
+        }
     },
 
     createdAt: {
