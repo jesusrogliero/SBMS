@@ -2,6 +2,7 @@
 
 const Provider = require('../models/Provider.js');
 const empty = require('../helpers/empty.js');
+const log = require('electron-log');
 
 const providers = {
 
@@ -14,6 +15,7 @@ const providers = {
 		try {
 			return await Provider.findAll({raw:true});
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -35,11 +37,17 @@ const providers = {
             });
 
             return {message: "Agregado con exito", code: 1};
-        } catch (error) {
-            if( !empty( error.errors ) )
-                return {message: error.errors[0].message, code: 0};
-            else
-                return { message: error.message, code: 0 };
+        
+		} catch (error) {
+            if( !empty( error.errors ) ) {
+				log.error(error);
+				return {message: error.errors[0].message, code: 0};
+			
+			}else {
+				log.error(error);
+				return { message: error.message, code: 0 };
+			}
+                
         }
     },
 
@@ -59,6 +67,7 @@ const providers = {
 			return provider;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -88,6 +97,7 @@ const providers = {
 			return {message: "Actualizado Correctamente", code: 1};
 			
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code: 0 };
 		}
 	},
@@ -111,6 +121,7 @@ const providers = {
 			return {message: "Eliminado Correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
