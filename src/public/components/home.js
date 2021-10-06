@@ -192,7 +192,7 @@ let home = Vue.component('home', {
 					>
 						<v-card-text>
 						<p class="text-h4 text--primary">
-							Consultar Precio
+							Consultar Precio de Venta
 						</p>
 				
 							<v-container>
