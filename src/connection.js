@@ -1,10 +1,15 @@
 const { Sequelize } = require('sequelize');
 
+
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: 'data/data.db',
   logging: false
 });
+
+
+
+//const sequelize = new Sequelize('sqlite::memory:', {logging:false});
 
 
 
