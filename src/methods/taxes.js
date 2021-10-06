@@ -2,6 +2,7 @@
 
 const empty = require('../helpers/empty.js');
 const Tax = require('../models/Tax.js');
+const log = require('electron-log');
 
 let Taxes = {
 
@@ -12,12 +13,18 @@ let Taxes = {
      */
      'index-taxes': async function() {
 
-        return await Tax.findAll({
-            attributes: { 
-                include: [ Tax.sequelize.literal("(percentage*100) || '%' AS percentage") ]
-            },
-            raw: true
-        });
+        try {
+            return await Tax.findAll({
+                attributes: { 
+                    include: [ Tax.sequelize.literal("(percentage*100) || '%' AS percentage") ]
+                },
+                raw: true
+            });
+
+        } catch (error) {
+            log.error(error);
+            return {message: error.message, code: 0};
+        }
 
     },
 
@@ -42,10 +49,16 @@ let Taxes = {
             return {message: "Agregado con exito", code: 1};
         
         } catch (error) {
-            if( !empty( error.errors ) )
+            
+            if( !empty( error.errors ) ) {
+                log.error(error.errors[0]);
                 return {message: error.errors[0].message, code: 0};
-            else
+            
+            }else {
+                log.error(error);
                 return { message: error.message, code: 0 };
+            }
+                
         }
 
     },
@@ -71,6 +84,7 @@ let Taxes = {
             return tax;
 
         }catch(error) {
+            log.error(error);
             return {message: error.message, code: 0};
         }
     },
@@ -108,7 +122,7 @@ let Taxes = {
             return { message: "Actualizado Correctamente", code: 1 };
 
         } catch (error) {
-
+            log.error(error);
             return { message: error.message, code: 0 };
         }
 
@@ -133,6 +147,7 @@ let Taxes = {
             return { message: "Eliminado Correctamente", code: 1 };
 
         } catch (error) {
+            log.error(error);
             return { message: error.message, code: 0 };
         }
     }
