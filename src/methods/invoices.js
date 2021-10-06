@@ -1,6 +1,7 @@
 'use strict'
 
 const sequelize = require('sequelize');
+const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
 const InvoiceState = require('../models/InvoiceState.js');
@@ -50,7 +51,7 @@ const invoices = {
 			});
 
 		} catch (error) {
-			console.log(error);
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -66,7 +67,7 @@ const invoices = {
 	 'create-invoice': async function(params) {
         try {
 
-			let order = Invoice.findOne({
+			let order = await Invoice.findOne({
 				where: {
 					client_id: params.client_id,
 					state_id: 1
@@ -87,10 +88,16 @@ const invoices = {
             return {message: "Agregado con exito", code: 1};
             
         } catch (error) {
-			if( !empty( error.errors ) )
+			
+			if( !empty( error.errors ) ) {
+				log.error(error.errors[0]);
 				return {message: error.errors[0].message, code: 0};
-			else
+			
+			}else {
+				log.error(error);
 				return { message: error.message, code: 0 };
+			}
+				
         }
     },
 
@@ -110,6 +117,7 @@ const invoices = {
 			return order;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -123,63 +131,60 @@ const invoices = {
 	 */
 	'approve-invoice': async function(id) {
 		try {
-
-			const order = await Invoice.findByPk(id);
+				const order = await Invoice.findByPk(id);
 			
-			if( empty(order) ) throw new Error("Esta orden de compra no existe");
-
-			if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
-
-			let items = await InvoiceItem.findAll({
-				where: { invoice_id: order.id },
-				raw: true
-			});
-
-			items.forEach(async (item) => {
-				let product = await Product.findByPk(item.product_id);
-
-				console.log(product);
-
-				// si se trata de un combo
-				if(product.product_type_id === 2) {
-					let comboItems = await ComboItem.findAll({
-						where: {
-							combo_id: product.id,
-						}
-					});
-
-					comboItems.forEach( async comboItem => {
-						let prd = await Product.findByPk(comboItem.product_id);
-
-						// calculo la cantidad de producto segun la cantidad de combo facture
-						let quantity_item = comboItem.quantity * item.quantity;
-
-						// verifico que haya existencia
-						if( (prd.stock - quantity_item) <= 0 ) 
-							throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
+				if( empty(order) ) throw new Error("Esta orden de compra no existe");
+	
+				if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
+	
+				let items = await InvoiceItem.findAll({
+					where: { invoice_id: order.id },
+					raw: true
+				});
+	
+				items.forEach(async (item) => {
+					let product = await Product.findByPk(item.product_id);
+	
+					// si se trata de un combo
+					if(product.product_type_id === 2) {
+						let comboItems = await ComboItem.findAll({
+							where: {
+								combo_id: product.id,
+							}
+						});
+	
+						comboItems.forEach( async comboItem => {
+							let prd = await Product.findByPk(comboItem.product_id);
+	
+							// calculo la cantidad de producto segun la cantidad de combo facture
+							let quantity_item = comboItem.quantity * item.quantity;
+	
+							// verifico que haya existencia
+							if( (prd.stock - quantity_item) <= 0 ) 
+								throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
+					
+							prd.stock = prd.stock - quantity_item;
+	
+							await prd.save();
+								
+						});
+					}
+	
+	
+					if( (product.stock - item.quantity) <= 0 )
+					throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
 				
-						prd.stock = prd.stock - quantity_item;
+					product.stock = product.stock - item.quantity;
+					await product.save();
+				});
+	
+				order.state_id = 3;
+				await order.save();
+				
+				return {message: "Facturado Correctamente", code: 1 };
 
-						await prd.save();
-							
-					});
-				}
-
-
-				if( (product.stock - item.quantity) <= 0 )
-				throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
-			
-				product.stock = product.stock - item.quantity;
-				await product.save();
-			});
-
-			order.state_id = 3;
-			await order.save();
-			
-			return {message: "Facturado Correctamente", code: 1 };
-            
 		} catch (error) {
-			console.log(error);
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -204,6 +209,7 @@ const invoices = {
 			return {message: "La venta fue generada correctamente", code: 1 };
 			
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -217,23 +223,29 @@ const invoices = {
 	 */
 	'destroy-invoice': async function(id) {
 		try {
-			let order = await Invoice.findByPk(id);
+			return await Invoice.sequelize.transaction(async (t) => {
 
-			if( empty(order) ) throw new Error("Esta venta no existe");
+				let order = await Invoice.findByPk(id);
 
-            if(order.state_id != 1) throw new Error("Esta venta ya fue procesada");
-
-            await InvoiceItem.destroy({
-                where: {
-                    invoice_id: order.id
-                }
-            });
-
-			await order.destroy();
-
-			return {message: "La venta fue eliminada correctamente", code: 1};
+				if( empty(order) ) throw new Error("Esta venta no existe");
+	
+				if(order.state_id != 1) throw new Error("Esta venta ya fue procesada");
+	
+				await InvoiceItem.destroy({
+					where: {
+						invoice_id: order.id
+					},
+					transaction: t
+				});
+	
+				await order.destroy({transaction: t});
+	
+				return {message: "La venta fue eliminada correctamente", code: 1};
+	
+			});
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
