@@ -2,4 +2,5 @@
 package-lock.json
 data/data.db
 /dist
+/logs
 yarn.lock
