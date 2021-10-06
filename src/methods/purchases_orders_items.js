@@ -145,11 +145,6 @@ const purchase_orders_items = {
 
 		try {
 
-			if(params.price < 1) throw new Error('Debes ingresar un precio correcto');
-			if(params.quantity < 1) throw new Error('La cantidad de productos no es correcta');
-			if(params.tax < 0) throw new Error('El impuesto ingresado no es correcto');
-			if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
-
 			const item = await PurchaseOrderItem.findByPk(params.id);
 
 			if( empty(item) ) throw new Error("Este producto no existe");
@@ -157,6 +152,11 @@ const purchase_orders_items = {
 			const order = await PurchaseOrder.findByPk(item.purchase_order_id);
 
 			if( order.state_id != 1) throw new Error('Lo siento esta orden ya fue generada o aprobada');
+
+			if(params.price < 1) throw new Error('Debes ingresar un precio correcto');
+			if(params.quantity < 1) throw new Error('La cantidad de productos no es correcta');
+			if(params.tax < 0) throw new Error('El impuesto ingresado no es correcto');
+			if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
 
 			// elimino los datos anteriores
 			order.tax_amount = order.tax_amount - item.tax_amount; 
