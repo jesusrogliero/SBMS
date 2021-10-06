@@ -1,9 +1,8 @@
 const { app, BrowserWindow } = require('electron');
 const { loadMethods } = require('./methods');
 const dirs = require('./dirs');
-require('events').EventEmitter.defaultMaxListeners = 15;
-
-
+const path = require('path');
+const log = require('electron-log').transports.file.resolvePath = () => path.join('logs/main.log');
 
 // funcion de inicio de la aplicacion
 const main = function () {
