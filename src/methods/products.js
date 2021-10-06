@@ -191,7 +191,7 @@ let products = {
                     
                     for (let i = 0; i < prices.length; i++) {
                         products_prices.push({
-                            price: parseFloat(prd_cost.cost + prd_cost.cost + prices[i].price).toFixed(2),
+                            price: parseFloat(prd_cost.cost + (prd_cost.cost * prices[i].price) ).toFixed(2),
                             price_name: prices[i].name,
                             currency_symbol: prd_cost.symbol
                         });
