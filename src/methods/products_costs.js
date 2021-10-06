@@ -1,5 +1,6 @@
 'use strict'
 
+const log = require('electron-log');
 const ProductCost = require('../models/ProductCost.js');
 const Currency = require('../models/Currency.js');
 const empty = require('../helpers/empty.js');
@@ -37,6 +38,7 @@ const products_costs = {
                 raw:true
             });
 		} catch (error) {
+            log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -83,10 +85,14 @@ const products_costs = {
                 return {message: "Costos Generados Correctamente", code: 1};
             
         } catch (error) {
-            if( !empty( error.errors ) )
+            
+            if( !empty( error.errors ) ) {
+                log.error(error.errors[0]);
                 return {message: error.errors[0].message, code: 0};
-            else
+            }else {
+                log.error(error);
                 return { message: error.message, code: 0 };
+            }  
         }
     },
 
@@ -137,10 +143,14 @@ const products_costs = {
             });
 
         } catch (error) {
-            if( !empty( error.errors ) )
+            if( !empty( error.errors ) ) {
+                log.error(error.errors[0]);
                 return {message: error.errors[0].message, code: 0};
-            else
+            
+            }else {
+                log.error(error);
                 return { message: error.message, code: 0 };
+            }
         }
     },
 
@@ -187,10 +197,15 @@ const products_costs = {
             return true;
 
         } catch (error) {
-            if( !empty( error.errors ) )
+            
+            if( !empty( error.errors ) ) {
+                log.error(error.errors[0]);
                 return {message: error.errors[0].message, code: 0};
-            else
+            }else{
+                log.error(error);
                 return { message: error.message, code: 0 };
+            }
+                
         }
     },
 
@@ -210,6 +225,7 @@ const products_costs = {
             return cost;
 
         } catch (error) {
+            log.error(error);
             return { message: error.message, code: 0 };
         }
     },
@@ -254,6 +270,7 @@ const products_costs = {
             return {message: 'Costos actualizados correctamente', code:1 };
 
         } catch (error) {
+            log.error(error);
             return { message: error.message, code: 0 };
         }
     },
