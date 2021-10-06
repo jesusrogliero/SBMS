@@ -1,5 +1,6 @@
 'use strict'
 const ProductType = require('../models/ProductType.js');
+const log = require('electron-log');
 
 const products_types = {
 
@@ -12,6 +13,7 @@ const products_types = {
 		try {
 			return await ProductType.findAll({raw:true});
 		} catch (error) {
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
