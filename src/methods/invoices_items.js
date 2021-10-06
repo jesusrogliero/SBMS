@@ -1,6 +1,7 @@
 'use strict'
 
 const sequelize = require('sequelize');
+const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
 const InvoiceState = require('../models/InvoiceState.js');
@@ -36,7 +37,7 @@ const invoices_items = {
 			});
 
 		} catch (error) {
-	
+			log.error(error);
 			return { message: error.message, code:0} ;
 		}
 	},
@@ -106,11 +107,15 @@ const invoices_items = {
             return {message: "Agregado con exito", code: 1};
             
         } catch (error) {
-			console.log(error);
-			if( !empty( error.errors ) )
+			
+			if( !empty( error.errors ) ){
+				log.error(error.errors[0]);
 				return {message: error.errors[0].message, code: 0};
-			else
+			
+			}else {
+				log.error(error);
 				return { message: error.message, code: 0 };
+			}
         }
     },
 
@@ -130,6 +135,7 @@ const invoices_items = {
 			return order;
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -171,6 +177,7 @@ const invoices_items = {
 			return {message: "El producto fue actualizado correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	},
@@ -204,6 +211,7 @@ const invoices_items = {
 			return {message: "Producto eliminado correctamente", code: 1};
 
 		} catch (error) {
+			log.error(error);
 			return {message: error.message, code: 0};
 		}
 	}
