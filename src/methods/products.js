@@ -2,6 +2,7 @@
 
 const sequelize = require('sequelize');
 const empty = require('../helpers/empty.js');
+const log = require('electron-log');
 const Product = require('../models/Product.js');
 const Tax = require('../models/Tax.js');
 const ProductType = require('../models/ProductType.js');
@@ -21,28 +22,34 @@ let products = {
      */
      'index-products': async function() {
 
-        return await Product.findAll({
-            attributes: {
-                include: [
-                    [sequelize.col('tax.percentage'), 'percentage'],
-                    [sequelize.col('products_type.type'), 'product_type'],
-                    [sequelize.col('products_type.id'), 'product_type_id']
-                ],
-            },
-            include: [
-                {
-                    model: Tax,
-                    required: true,
-                    attributes: []
+        try {
+            return await Product.findAll({
+                attributes: {
+                    include: [
+                        [sequelize.col('tax.percentage'), 'percentage'],
+                        [sequelize.col('products_type.type'), 'product_type'],
+                        [sequelize.col('products_type.id'), 'product_type_id']
+                    ],
                 },
-                {
-                    model: ProductType,
-                    required: true,
-                    attributes: []
-                }
-            ],
-            raw:true
-        });
+                include: [
+                    {
+                        model: Tax,
+                        required: true,
+                        attributes: []
+                    },
+                    {
+                        model: ProductType,
+                        required: true,
+                        attributes: []
+                    }
+                ],
+                raw:true
+            });
+
+        } catch (error) {
+            log.error(error);
+            return {message: error.message, code: 0};
+        }
 
     },
 
@@ -53,33 +60,36 @@ let products = {
      * @returns products
      */
       'index-products-standar': async function() {
-
-        return await Product.findAll({
-            attributes: {
-                include: [
-                    [sequelize.col('tax.percentage'), 'percentage'],
-                    [sequelize.col('products_type.type'), 'product_type'],
-                    [sequelize.col('products_type.id'), 'product_type_id']
-                ],
-            },
-            include: [
-                {
-                    model: Tax,
-                    required: true,
-                    attributes: []
+        try {
+            return await Product.findAll({
+                attributes: {
+                    include: [
+                        [sequelize.col('tax.percentage'), 'percentage'],
+                        [sequelize.col('products_type.type'), 'product_type'],
+                        [sequelize.col('products_type.id'), 'product_type_id']
+                    ],
                 },
-                {
-                    model: ProductType,
-                    required: true,
-                    attributes: []
-                }
-            ],
-            where: {
-                product_type_id: 1
-            },
-            raw:true
-        });
-
+                include: [
+                    {
+                        model: Tax,
+                        required: true,
+                        attributes: []
+                    },
+                    {
+                        model: ProductType,
+                        required: true,
+                        attributes: []
+                    }
+                ],
+                where: {
+                    product_type_id: 1
+                },
+                raw:true
+            }); 
+        } catch (error) {
+            log.error(error);
+           return {message: error.message, code: 0}; 
+        }
     },
 
     /**
@@ -136,10 +146,16 @@ let products = {
 
         
         } catch (error) {
-            if( !empty( error.errors ) )
+            
+            if( !empty( error.errors ) ) {
+                log.error(error.errors[0].message);
                 return {message: error.errors[0].message, code: 0};
-            else
+            
+            }else {
+                log.error(error);
                 return { message: error.message, code: 0 };
+            }
+                
         }
 
     },
@@ -201,7 +217,7 @@ let products = {
                 return products_prices;
     
             }catch(error) {
-                console.error(error);
+              log.error(error);
                 return {message: error.message, code: 0};
             }
         },
@@ -243,7 +259,7 @@ let products = {
             return {data, code:1};
 
         }catch(error) {
-            console.error(error);
+            log.error(error);
             return {message: error.message, code: 0};
         }
     },
@@ -299,7 +315,7 @@ let products = {
             return product;
 
         }catch(error) {
-            console.error(error);
+            log.error(error);
             return {message: error.message, code: 0};
         }
     },
@@ -372,7 +388,7 @@ let products = {
             });
             
         } catch (error) {
-            console.error(error);
+            log.error(error);
             return { message: error.message, code: 0 };
         }
 
@@ -412,6 +428,7 @@ let products = {
 
 
         } catch (error) {
+            log.error(error);
             return { message: error.message, code: 0 };
         }
     }
