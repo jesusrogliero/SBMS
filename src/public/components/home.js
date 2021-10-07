@@ -20,7 +20,8 @@ let home = Vue.component('home', {
 	created: async function() {
 		let currency = await execute('show-currency', 2);
 		this.currency_default = await execute('show-currency', 1);
-		this.exchange_rate = currency.exchange_rate;
+
+		this.exchange_rate = formatMoney( currency.exchange_rate);
 	},
 
 	watch: {
@@ -35,10 +36,8 @@ let home = Vue.component('home', {
 	methods: {
 
 		format: function(val) {
-			if( typeof val === 'string'){ 
+			if( typeof val === 'string')
 				this.exchange_rate = parseFloat(val.split(' ').join('').split(',').join('').split('Bs.S').join(''));
-				console.log(this.exchange_rate);
-			}
 		},
 
 		format_money: function(price, symbol) {
@@ -126,7 +125,7 @@ let home = Vue.component('home', {
 
 				<v-col>
 				<v-card color="teal lighten-4">
-					<v-card-title>Tasa del dia</v-card-title>
+					<v-card-title>Tasa del Dolar</v-card-title>
 					<v-text-field
 						class="ml-4 mr-4 mt-n2 text-h5"
 						v-model="exchange_rate"
