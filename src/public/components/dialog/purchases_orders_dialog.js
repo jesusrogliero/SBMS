@@ -77,7 +77,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     initialize: async function () {
         this.purchase = await execute('show-purchase', this.id);
         this.purchases_items = await execute('index-purchases_items', this.id);
-        this.pageCount =  Math.round ( Object.keys(this.purchases_items).length / 16); 
+
+        if( Math.round ( Object.keys(this.purchases_items).length / 16) >= 1)
+          this.pageCount =  Math.round ( Object.keys(this.purchases_items).length / 16); 
     },
 
     
@@ -434,6 +436,19 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                 </v-icon>
                 </v-btn> 
 
+                <v-btn
+                color="primary"
+                icon
+                class="mb-2"
+                v-bind="attrs"
+                @click="initialize"
+              >
+                <v-icon
+                >
+                mdi-reload
+                </v-icon>
+              </v-btn> 
+
 
             <v-btn
                 color="primary"
@@ -460,7 +475,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
 
                     <v-col cols = "6">
                         <autocomplete-form
-                            uri = "index-products"
+                            uri = "index-products-standar"
                             label = "Selecciona el Producto"
                             column = "name"
                             itemValue = "id"
