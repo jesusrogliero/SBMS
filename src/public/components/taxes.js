@@ -188,6 +188,19 @@ let taxes = Vue.component('taxes', {
             </v-icon>
             </v-btn> 
 
+            <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
+
 
           <v-btn
             color="primary"
