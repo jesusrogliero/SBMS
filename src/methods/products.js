@@ -1,6 +1,6 @@
 'use strict'
 
-const sequelize = require('sequelize');
+const sequelize = require('../connection.js');
 const empty = require('../helpers/empty.js');
 const log = require('electron-log');
 const Product = require('../models/Product.js');
@@ -108,7 +108,6 @@ let products = {
 
                 const product = await Product.create({
                     name: params.name,
-                    stock: params.stock,
                     taxId: params.taxId,
                     product_type_id: params.product_type_id
                 }, {transaction: t});
@@ -118,10 +117,22 @@ let products = {
                     if( empty(params.cost_combo) || params.cost_combo < 0)
                         throw new Error('Debes ingresar el costo del combo');
                     
+                    let stock_prd = 100;
                     for (let i = 0; i < params.items.length; i++) {
 
                         if( params.items[i].quantity < 1)
                             throw new Error('Debes especificar la cantidad de producto que deseas agregar al combo');
+
+                        let prd = await Product.findOne({
+                            where: {
+                                id: params.items[i].product_id
+                            }
+                        });
+
+                        // calculo el stock del combo
+                        if(stock_prd > (prd.stock / params.items[i].quantity) )
+                            stock_prd = prd.stock / params.items[i].quantity;
+                        
 
                         await ComboItem.create({
                             combo_id: product.id,
@@ -129,6 +140,9 @@ let products = {
                             quantity: params.items[i].quantity
                         }, {transaction: t});
                     }
+
+                    product.stock = stock_prd;
+                    await product.save({transaction: t});
 
                     let result = await createCosts({
                         product_id: product.id,
@@ -138,9 +152,14 @@ let products = {
 
                     if(result.code === 0) throw new Error(result.message);
 
+                    this['ajust-stock-combo']();
+
+                    return {message: "Combo Agregado con exito", code: 1};
+
                 }
-        
-                return {message: "Agregado con exito", code: 1};
+                
+                return {message: "Producto Agregado con exito", code: 1};
+                
 
             });
 
@@ -159,6 +178,65 @@ let products = {
         }
 
     },
+
+
+
+    /**
+     * funcion que ajusta el stock de los combos
+     * 
+     * @param {int} id 
+     * @returns {json} product
+     */
+     'ajust-stock-combo': async function() {
+        try {
+
+            return await Product.sequelize.transaction(async (t) => {
+                
+                const combos = await Product.findAll({
+                    where: {
+                        product_type_id: 2
+                    }
+                });
+
+                // recorro todos los combos
+                combos.forEach(async combo => {
+
+                    // busco los item del combo
+                    let combo_items = await ComboItem.findAll({
+                        where: {
+                            combo_id: combo.id
+                        },
+                        raw: true
+                    });
+
+                   // itero los items
+                    let stock_combo = 100;
+                    for (let i = 0; i < combo_items.length; i++) {
+                        
+                        let prd = await Product.findByPk(combo_items[i].product_id);
+
+                        // calculo el stock del combo
+                        if(stock_combo > (prd.stock / combo_items[i].quantity ) )
+                            stock_combo = prd.stock / combo_items[i].quantity;
+
+                    }
+
+                    combo.stock = stock_combo;
+                    await combo.save({transaction: t});
+                });
+
+                return {message: "Existencia de los combos ajustada correctamente", code: 1};
+            });
+
+
+        }catch(error) {
+            log.error(error);
+            return {message: error.message, code: 0};
+        }
+},
+
+
+
 
     /**
      * funcion que muestra la informacion de un producto
@@ -220,7 +298,7 @@ let products = {
               log.error(error);
                 return {message: error.message, code: 0};
             }
-        },
+    },
 
     
     /**
@@ -419,6 +497,13 @@ let products = {
                         transaction: t
                     });
                 }
+
+                await ProductCost.destroy({
+                    where: {
+                        product_id: product.id
+                    },
+                    transaction: t
+                });
                 
                 // elimino el producto
                 await product.destroy({transaction: t});
