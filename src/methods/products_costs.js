@@ -106,41 +106,38 @@ const products_costs = {
 	 'update-cost': async function(params) {
         try {
 
-            return await ProductCost.sequelize.transaction(async (t) => {
+            if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
+            if( empty(params.currency_id) ) throw new Error('Debes seleccionar una moneda');
+            if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
 
-                if( params.cost <= 0) throw new Error('El costo ingresado no es correcto');
-                if( empty(params.currency_id) ) throw new Error('Debes seleccionar una moneda');
-                if( empty(params.product_id) ) throw new Error('Debes seleccionar un producto');
-    
-                // busco todas las monedas
-                const currencies =  await Currency.findAll();
-                const currency_cost = await Currency.findByPk(params.currency_id); 
-    
-                currencies.forEach( async (currency) => {
-                    let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
-              
-                    let product_cost = await ProductCost.findOne({
-                        where:{
-                            product_id: params.product_id,
-                            currency_id: currency.id
-                        }
-                    });
-    
-                    // si el costo no existe se genera uno nuevo
-                    if( empty(product_cost) ) {
-                        product_cost = ProductCost.build({
-                            currency_id: currency.id,
-                            product_id: params.product_id,
-                        });
+            // busco todas las monedas
+            const currencies =  await Currency.findAll();
+            const currency_cost = await Currency.findByPk(params.currency_id); 
+
+            currencies.forEach( async (currency) => {
+                let exchange_rate = currency_cost.exchange_rate / currency.exchange_rate;
+            
+                let product_cost = await ProductCost.findOne({
+                    where:{
+                        product_id: params.product_id,
+                        currency_id: currency.id
                     }
-    
-                    product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
-    
-                    await product_cost.save({transaction: t});
                 });
-    
-                return {message: "Costos actualizados correctamente", code: 1};
+
+                // si el costo no existe se genera uno nuevo
+                if( empty(product_cost) ) {
+                    product_cost = ProductCost.build({
+                        currency_id: currency.id,
+                        product_id: params.product_id,
+                    });
+                }
+
+                product_cost.cost = parseFloat(params.cost * exchange_rate).toFixed(2);
+
+                await product_cost.save();
             });
+
+            return {message: "Costo actualizado Correctamente", code: 1 };
 
         } catch (error) {
             if( !empty( error.errors ) ) {
@@ -189,7 +186,7 @@ const products_costs = {
                         });
                     }
 
-                    products_costs.cost = item.price * exchange_rate;
+                    products_costs.cost =parseFloat( item.price * exchange_rate).toFixed(2);
                     await products_costs.save();
                 });
             });
@@ -263,7 +260,7 @@ const products_costs = {
                     }
                 });
 
-                prd_cost.cost = currency.exchange_rate * products_costs[i].cost;
+                prd_cost.cost = parseFloat( currency.exchange_rate * products_costs[i].cost).toFixed(2);
                 await prd_cost.save();
             }
 
