@@ -1,6 +1,6 @@
 'use strict'
 
-const sequelize = require('sequelize');
+const sequelize = require('../connection.js');
 const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
@@ -8,6 +8,7 @@ const InvoiceState = require('../models/InvoiceState.js');
 const InvoiceItem = require('../models/InvoiceItem.js');
 const Currency = require('../models/Currency.js');
 const Product = require('../models/Product.js');
+const ajust_stock_combo = require('./products.js')['ajust-stock-combo'];
 const ComboItem = require('../models/ComboItem.js');
 const Client = require('../models/Client.js');
 
@@ -75,7 +76,7 @@ const invoices = {
 				raw: true
 			});
 
-			if( order.state_id === 1 )
+			if( !empty(order) )
 				throw new Error(`Este cliente ya tiene una venta pendiente: Orden Nº ${order.id}`);
 
             // creo una nueva compra
@@ -130,61 +131,78 @@ const invoices = {
 	 * @returns message
 	 */
 	'approve-invoice': async function(id) {
-		try {
-				const order = await Invoice.findByPk(id);
-			
-				if( empty(order) ) throw new Error("Esta orden de compra no existe");
-	
-				if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
-	
-				let items = await InvoiceItem.findAll({
-					where: { invoice_id: order.id },
-					raw: true
-				});
-	
-				items.forEach(async (item) => {
-					let product = await Product.findByPk(item.product_id);
-	
-					// si se trata de un combo
-					if(product.product_type_id === 2) {
-						let comboItems = await ComboItem.findAll({
-							where: {
-								combo_id: product.id,
-							}
-						});
-	
-						comboItems.forEach( async comboItem => {
-							let prd = await Product.findByPk(comboItem.product_id);
-	
-							// calculo la cantidad de producto segun la cantidad de combo facture
-							let quantity_item = comboItem.quantity * item.quantity;
-	
-							// verifico que haya existencia
-							if( (prd.stock - quantity_item) <= 0 ) 
-								throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
-					
-							prd.stock = prd.stock - quantity_item;
-	
-							await prd.save();
-								
-						});
-					}
-	
-	
-					if( (product.stock - item.quantity) <= 0 )
-					throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
-				
-					product.stock = product.stock - item.quantity;
-					await product.save();
-				});
-	
-				order.state_id = 3;
-				await order.save();
-				
-				return {message: "Facturado Correctamente", code: 1 };
 
+		const t = await Invoice.sequelize.transaction();
+
+		try {
+
+			let res = await ajust_stock_combo();
+
+			if(res.code === 0)
+				throw res;
+
+			const order = await Invoice.findByPk(id);
+		
+			if( empty(order) ) throw new Error("Esta orden de compra no existe");
+
+			if( order.state_id != 2) throw new Error('Esta orden aun no ha sido generada');
+
+
+			// busco todos los items de la orden
+			let items = await InvoiceItem.findAll({
+				where: { invoice_id: order.id },
+				raw: true
+			});
+
+			
+			items.forEach(async (item) => {
+				let product = await Product.findByPk(item.product_id);
+				
+				if( (product.stock - item.quantity) <= 0 )
+					throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
+
+				product.stock = product.stock - item.quantity;
+
+				// si se trata de un combo
+				if(product.product_type_id === 2) {
+					
+					let comboItems = await ComboItem.findAll({
+						where: {
+							combo_id: product.id,
+						}
+					});
+
+					// recorro todos los items del combo
+					comboItems.forEach( async comboItem => {
+						let prd = await Product.findByPk(comboItem.product_id);
+
+						// calculo la cantidad de producto segun la cantidad de combo que facture
+						let quantity_item = comboItem.quantity * item.quantity;
+
+						// verifico que haya existencia
+						if( (prd.stock - quantity_item) <= 0 ) 
+							throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
+				
+						prd.stock = prd.stock - quantity_item;
+
+						await prd.save({transaction: t});
+							
+					});
+				}
+
+				await product.save({transaction: t});
+			});
+
+			order.state_id = 3;
+			await order.save({transaction: t});
+
+			await t.commit();
+			return {message: "Facturado Correctamente", code: 1 };
+	
+			
 		} catch (error) {
 			log.error(error);
+			await t.rollback();
 			return {message: error.message, code: 0};
 		}
 	},
