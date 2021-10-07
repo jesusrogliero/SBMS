@@ -31,7 +31,7 @@ var autocomplete = Vue.component('autocomplete-form', {
 				this.signal.controller.abort();
 			this.signal = { q, signal, controller };
 
-            this.suggestions = await execute(this.uri,{});
+			this.suggestions = await execute(this.uri, {});
 		}
 
 	},
