@@ -63,7 +63,9 @@ let purchases = Vue.component('purchases-orders', {
 
   methods: {
     initialize: async function () {
-        this.purchases = await execute('index-purchases',{});
+      this.purchases = await execute('index-purchases',{});
+
+      if( Math.round ( Object.keys(this.purchases).length / 16) >= 1)
         this.pageCount =  Math.round ( Object.keys(this.purchases).length / 16);
     },
 
@@ -225,6 +227,19 @@ let purchases = Vue.component('purchases-orders', {
               mdi-plus
             </v-icon>
             </v-btn> 
+
+			<v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
 
 
           <v-btn
