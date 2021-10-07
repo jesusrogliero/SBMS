@@ -51,7 +51,10 @@ let taxes = Vue.component('taxes', {
   methods: {
     initialize: async function () {
       this.taxes = await execute('index-taxes',{});
-      this.pageCount =  Math.round ( Object.keys(this.taxes).length / 16);
+
+      
+      if( Math.round ( Object.keys(this.taxes).length / 16) >= 1)
+        this.pageCount =  Math.round ( Object.keys(this.taxes).length / 16);
     },
 
     cleanForm: function() {
