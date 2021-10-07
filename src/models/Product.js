@@ -27,7 +27,11 @@ const Product = sequelize.define("products", {
     stock: {
         type: DataTypes.NUMBER,
         allowNull: false,
+        defaultValue: 0,
         validate: {
+            isNumeric: {
+                msg: "Debes igresar una existencia correcta"
+            },
             notNull: {
                 args: true,
                 msg: "Debes ingresar la existencia del producto"
