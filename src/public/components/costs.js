@@ -12,6 +12,7 @@ let costs = Vue.component('costs', {
     pageCount: 1,
     search: "",
     hidden: false,
+    key_component: 0,
     headers: [
       {
         text: 'ID',
@@ -55,16 +56,19 @@ let costs = Vue.component('costs', {
   methods: {
     initialize: async function () {
       this.costs = await execute('index-costs',{});
-      this.pageCount =  Math.round ( Object.keys(this.costs).length / 16);
+
+      if(Math.round ( Object.keys(this.costs).length / 16) )
+        this.pageCount =  Math.round ( Object.keys(this.costs).length / 16);
     },
 
     cleanForm: function() {
+      this.key_component++;
       this.editedItem = {
         id: '',
         product_id: null,
         currency_id: null,
         cost: 0
-      }
+      };
     },
 
     getSelectProduct: function(value) {
@@ -90,6 +94,7 @@ let costs = Vue.component('costs', {
       this.editedIndex = item.id
       this.editedItem = await execute('show-cost', this.editedIndex);
       this.dialog = true
+      this.key_component++;
     },
 
     deleteItem: async function(item) {
@@ -255,6 +260,7 @@ let costs = Vue.component('costs', {
                       itemValue = "id"
                       :defaultValue = "editedItem.product_id"
                       :getSelect = "getSelectProduct"
+                      :key="key_component"
                   />
                </v-col>  
                
@@ -267,6 +273,7 @@ let costs = Vue.component('costs', {
                     itemValue = "id"
                     :defaultValue = "editedItem.currency_id"
                     :getSelect = "getSelectCurrency"
+                    :key="key_component"
                 />
                 </v-col>  
 
