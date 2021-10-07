@@ -1,6 +1,6 @@
 {
-  "name": "many-electron",
-  "version": "1.0.0",
+  "name": "sistema_administrativo",
+  "version": "0.5.0",
   "description": "Sistema administrativo",
   "main": "app.js",
   "scripts": {
