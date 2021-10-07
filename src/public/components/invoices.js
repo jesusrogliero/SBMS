@@ -15,6 +15,7 @@ let invoices = Vue.component('invoices', {
     pageCount: 1,
     search: "",
     hidden: false,
+    key_component: 0,
     headers: [
       {
         text: 'ID',
@@ -61,7 +62,9 @@ let invoices = Vue.component('invoices', {
   methods: {
     initialize: async function () {
         this.invoices = await execute('index-invoices',{});
-        this.pageCount =  Math.round ( Object.keys(this.invoices).length / 16);
+
+        if(Math.round ( Object.keys(this.invoices).length / 16) >= 1) 
+          this.pageCount =  Math.round ( Object.keys(this.invoices).length / 16);
     },
 
     
@@ -74,7 +77,8 @@ let invoices = Vue.component('invoices', {
             id: '',
             client_id: '',
             currency_id: '',
-        }
+        };
+        this.key_component++;
     },
 
     getSelectClient: function(value) {
@@ -88,7 +92,8 @@ let invoices = Vue.component('invoices', {
     editItem: async function(item) {
       this.editedIndex = item.id
       this.editedItem = await execute('show-invoice', this.editedIndex);
-      this.dialog = true
+      this.dialog = true;
+      this.key_component++;
     },
 
     deleteItem: async function(item) {
@@ -219,6 +224,20 @@ let invoices = Vue.component('invoices', {
             </v-btn> 
 
 
+            <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
+
+
           <v-btn
             color="primary"
             icon
@@ -250,6 +269,7 @@ let invoices = Vue.component('invoices', {
                         itemValue = "id"
                         :defaultValue = "editedItem.client_id"
                         :getSelect = "getSelectClient"
+                        :key="key_component"
                     />
                 </v-col>
 
@@ -261,6 +281,7 @@ let invoices = Vue.component('invoices', {
                         itemValue = "id"
                         :defaultValue = "editedItem.currency_id"
                         :getSelect = "getSelectCurrency"
+                        :key="key_component"
                     />
                 </v-col>
 
