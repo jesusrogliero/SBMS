@@ -57,7 +57,9 @@ let clients = Vue.component('clients', {
   methods: {
     initialize: async function () {
       this.clients = await execute('index-clients',{});
-      this.pageCount =  Math.round ( Object.keys(this.clients).length / 16);
+
+      if(Math.round ( Object.keys(this.clients).length / 16) >= 1 )
+        this.pageCount =  Math.round ( Object.keys(this.clients).length / 16);
     },
 
     editItem: async function(item) {
@@ -188,7 +190,19 @@ let clients = Vue.component('clients', {
             </v-icon>
             </v-btn> 
 
-
+            <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
+            
           <v-btn
             color="primary"
             icon
