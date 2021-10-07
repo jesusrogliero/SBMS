@@ -53,7 +53,9 @@ let currencies = Vue.component('currencies', {
   methods: {
     initialize: async function () {
       this.currencies = await execute('index-currencies',{});
-      this.pageCount =  Math.round ( Object.keys(this.currencies).length / 16);
+
+      if(Math.round ( Object.keys(this.currencies).length / 16) >= 1)
+        this.pageCount =  Math.round ( Object.keys(this.currencies).length / 16);
     },
 
     editItem: async function(item) {
@@ -192,6 +194,20 @@ let currencies = Vue.component('currencies', {
               mdi-plus
             </v-icon>
             </v-btn> 
+
+
+            <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
 
 
           <v-btn
