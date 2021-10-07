@@ -1,199 +1,213 @@
 'use strict'
 
 let invoicesDialog = Vue.component('invoices-dialog', {
-    
-    props: ['id', 'hidde', 'active'],
 
-  data: () => ({
-    dialog: false,
-    dialogDelete: false,
-    page: 1,
-    pageCount: 1,
-    search: "",
-    hidden: false,
-    headers: [
-      {
-        text: 'ID',
-        align: 'start',
-        sortable: false,
-        value: 'id',
-      },
-      { text: 'Producto', value: 'product_name'},
-      { text: 'Cantidad', value: 'quantity'},
-      { text: 'Precio p/u', value: 'price'},
-      { text: 'Impuesto', value: 'tax_amount' },
-      { text: 'Subtotal', value: 'subtotal'},
-      { text: 'Total', value: 'total'},
-      { text: 'Creado', value: 'createdAt'},
-      { text: 'Actualizado', value: 'updatedAt'},
-      { text: 'Acciones', value: 'actions', sortable: false},
-    ],
-    invoice_items: [],
-    invoice: {},
-    currency: {},
-    client: {},
-    currency_symbol: "",
-    editedIndex: -1,
-    editedItem: {},
-  }),
+	props: ['id', 'hidde', 'active'],
 
-  computed: {
-    formTitle () {
-      return this.editedIndex === -1 ? 'Añadir un Producto' : 'Actualizar un Producto';
-    },
-  },
+	data: () => ({
+		dialog: false,
+		dialogDelete: false,
+		page: 1,
+		pageCount: 1,
+		search: "",
+		hidden: false,
+		key_component: 0,
+		headers: [
+			{
+				text: 'ID',
+				align: 'start',
+				sortable: false,
+				value: 'id',
+			},
+			{ text: 'Producto', value: 'product_name' },
+			{ text: 'Cantidad', value: 'quantity' },
+			{ text: 'Precio p/u', value: 'price' },
+			{ text: 'Impuesto', value: 'tax_amount' },
+			{ text: 'Subtotal', value: 'subtotal' },
+			{ text: 'Total', value: 'total' },
+			{ text: 'Creado', value: 'createdAt' },
+			{ text: 'Actualizado', value: 'updatedAt' },
+			{ text: 'Acciones', value: 'actions', sortable: false },
+		],
+		invoice_items: [],
+		invoice: {},
+		currency: {},
+		client: {},
+		currency_symbol: "",
+		editedIndex: -1,
+		editedItem: {},
+	}),
 
-  watch: {
-    dialog (val) {
-      val || this.close()
-    },
-    dialogDelete (val) {
-      val || this.closeDelete()
-    },
-    
-    id: async function (val) {
-       
-        if(val != null) {
-            this.cleanForm();
-             await this.initialize();
+	computed: {
+		formTitle() {
+			return this.editedIndex === -1 ? 'Añadir un Producto' : 'Actualizar un Producto';
+		},
+	},
 
-            this.currency = await execute('show-currency', this.invoice.currency_id);
-            this.client = await execute('show-client', this.invoice.client_id);
+	watch: {
+		dialog(val) {
+			val || this.close()
+		},
+		dialogDelete(val) {
+			val || this.closeDelete()
+		},
 
-            let result = await execute('show-currency-symbol', this.currency.id);
+		id: async function (val) {
 
-            if(result.code == 0) 
-              alertApp({color:"error", text: result, icon: "alert" }); 
-            
-            this.currency_symbol = result.symbol;
-        }
-    }
-  },
+			if (val != null) {
+				this.cleanForm();
+				await this.initialize();
 
+				this.currency = await execute('show-currency', this.invoice.currency_id);
+				this.client = await execute('show-client', this.invoice.client_id);
 
-  methods: {
-    initialize: async function () {
-        this.invoice = await execute('show-invoice', this.id);
-        this.invoice_items = await execute('index-invoices-items', this.id);
-        this.pageCount =  Math.round ( Object.keys(this.invoice_items).length / 16); 
-    },
+				let result = await execute('show-currency-symbol', this.currency.id);
 
-    
-    format: function(value) {
-        return `${formatMoney(value)} ${this.currency.symbol} `;
-    },
+				if (result.code == 0)
+					alertApp({ color: "error", text: result, icon: "alert" });
 
-    cleanForm: function() {
-        this.editedItem = {
-            id: '',
-            invoice_id: this.id,
-            product_id: '',
-            price: null,
-            price_id: '',
-            quantity: '',
-          };
-    },
-
-    getSelectProduct: function(value) {
-        this.editedItem.product_id = value;
-    },
-
-    getSelectPrice: function(value) {
-      this.editedItem.price_id = value;
-    },
-
-    saveOrder: async function() {
-      let result = await execute('generate-invoice', this.id);
-
-      if(result.code == 1) {
-        alertApp({color:"success", text: result, icon: "check" }); 
-      }else{
-        alertApp({color:"error", text: result, icon: "alert" }); 
-      }
-
-      this.initialize();
-
-    },
-
-    approveOrder: async function() {
-      let result = await execute('approve-invoice', this.id);
-
-      if(result.code == 1) {
-        alertApp({color:"success", text: result, icon: "check" }); 
-      }else{
-        alertApp({color:"error", text: result, icon: "alert" }); 
-      }
-      this.initialize();
-
-    },
-
-    editItem: async function(item) {
-      this.editedIndex = item.id
-      this.editedItem = await execute('show-invoice_item', this.editedIndex);
-      this.dialog = true
-    },
-
-    deleteItem: async function(item) {
-      this.editedIndex = item.id;
-      this.editedItem = await execute('show-invoice_item', this.editedIndex);
-
-      if(this.editedItem.code == 0){
-        alertApp({color:"error", text: this.editedItem, icon: "alert" });
-        this.cleanForm();
-      }
-        
-      this.dialogDelete = true
-    },
-
-    deleteItemConfirm: async function() {
-      let result = await execute('destroy-invoice_item', this.editedIndex);
+				this.currency_symbol = result.symbol;
+			}
+		}
+	},
 
 
-      if(result.code == 1) {
-        alertApp({color:"success", text: result, icon: "check" }); 
-      }else{
-        alertApp({color:"error", text: result, icon: "alert" }); 
-      }
+	methods: {
+		initialize: async function () {
+			console.log(this.id);
+			this.invoice = await execute('show-invoice', this.id);
+			this.invoice_items = await execute('index-invoices-items', this.id);
 
-      this.closeDelete();
-    },
+			if (Math.round(Object.keys(this.invoice_items).length / 16) >= 1)
+				this.pageCount = Math.round(Object.keys(this.invoice_items).length / 16);
+		},
 
-    close () {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.initialize();
-        this.cleanForm();
-        this.editedIndex = -1;
-      })
-    },
 
-    closeDelete () {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.initialize();
-        this.cleanForm();
-        this.editedIndex = -1;
-      })
-    },
+		format: function (value) {
+			return `${formatMoney(value)} ${this.currency.symbol} `;
+		},
 
-    save: async function() {
-        let result = null;
+		cleanForm: function () {
+			this.key_component++;
+			this.editedItem = {
+				id: '',
+				invoice_id: this.id,
+				product_id: '',
+				price: null,
+				price_id: '',
+				quantity: '',
+			};
 
-        if (this.editedIndex > -1) {
-          result = await execute('update-invoice_item', this.editedItem);
-        } else {
-          result = await execute('create-invoice-item', this.editedItem);
-        }
-  
-        if(result.code === 1) {
-          alertApp({color:"success", text: result, icon: "check" }); 
-          this.close();
-        }else{
-          alertApp({color:"error", text: result, icon: "alert" }); 
-        }
-         
-      },
-  },
+		},
+
+		getSelectProduct: function (value) {
+			this.editedItem.product_id = value;
+		},
+
+		getSelectPrice: function (value) {
+			this.editedItem.price_id = value;
+		},
+
+		saveOrder: async function () {
+			let result = await execute('generate-invoice', this.id);
+
+			if (result.code == 1) {
+				alertApp({ color: "success", text: result, icon: "check" });
+			} else {
+				alertApp({ color: "error", text: result, icon: "alert" });
+			}
+
+			this.initialize();
+
+		},
+
+		approveOrder: async function () {
+			let result = await execute('approve-invoice', this.id);
+
+			if (result.code == 1) {
+				alertApp({ color: "success", text: result, icon: "check" });
+			} else {
+				alertApp({ color: "error", text: result, icon: "alert" });
+			}
+			this.initialize();
+
+		},
+
+		editItem: async function (item) {
+			
+			this.editedIndex = this.id;
+			this.editedItem = await execute('show-invoice_item', this.editedIndex);
+
+			if (this.editedItem.code == 0) {
+				alertApp({ color: "error", text: this.editedItem, icon: "alert" });
+				return;
+			}
+
+			this.dialog = true;
+			this.key_component++;
+		},
+
+		deleteItem: async function (item) {
+			this.editedIndex = item.id;
+			this.editedItem = await execute('show-invoice_item', this.editedIndex);
+
+			if (this.editedItem.code == 0) {
+				alertApp({ color: "error", text: this.editedItem, icon: "alert" });
+				this.cleanForm();
+			}
+
+			this.dialogDelete = true
+		},
+
+		deleteItemConfirm: async function () {
+			let result = await execute('destroy-invoice_item', this.editedIndex);
+
+
+			if (result.code == 1) {
+				alertApp({ color: "success", text: result, icon: "check" });
+			} else {
+				alertApp({ color: "error", text: result, icon: "alert" });
+			}
+
+			this.closeDelete();
+		},
+
+		close() {
+			this.dialog = false;
+			this.$nextTick(() => {
+				this.initialize();
+				this.cleanForm();
+				this.editedIndex = -1;
+			});
+		},
+
+		closeDelete() {
+			this.dialogDelete = false;
+			this.$nextTick(() => {
+				this.initialize();
+				this.cleanForm();
+				this.editedIndex = -1;
+			})
+		},
+
+		save: async function () {
+			let result = null;
+
+			if (this.editedIndex > -1) {
+				result = await execute('update-invoice_item', this.editedItem);
+			} else {
+				result = await execute('create-invoice-item', this.editedItem);
+			}
+
+			if (result.code === 1) {
+				alertApp({ color: "success", text: result, icon: "check" });
+				this.close();
+			} else {
+				alertApp({ color: "error", text: result, icon: "alert" });
+			}
+
+		},
+	},
 
 
 	template: `
@@ -393,6 +407,19 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                 </v-btn> 
 
 
+                <v-btn
+                color="primary"
+                icon
+                class="mb-2"
+                v-bind="attrs"
+                @click="initialize"
+              >
+                <v-icon
+                >
+                mdi-reload
+                </v-icon>
+              </v-btn> 
+
             <v-btn
                 color="primary"
                 icon
@@ -424,6 +451,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                             itemValue = "id"
                             :defaultValue = "editedItem.product_id"
                             :getSelect = "getSelectProduct"
+                            :key="key_component"
                         />
                     </v-col>
 
@@ -439,6 +467,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                             v-model="editedItem.price"
                             label="Precio"
                             :prefix="currency_symbol"
+							disabled
                         ></v-text-field>
                     </v-col>
 
@@ -450,6 +479,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                           itemValue = "id"
                           :defaultValue = "editedItem.price_id"
                           :getSelect = "getSelectPrice"
+                          :key="key_component"
                       />
                     </v-col>
 
