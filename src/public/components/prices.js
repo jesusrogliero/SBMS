@@ -53,7 +53,10 @@ let prices = Vue.component('prices', {
   methods: {
     initialize: async function () {
       this.prices = await execute('index-prices',{});
-      this.pageCount =  Math.round ( Object.keys(this.prices).length / 16);
+
+      if(Math.round ( Object.keys(this.prices).length / 16) >= 1)
+        this.pageCount =  Math.round ( Object.keys(this.prices).length / 16);
+        
     },
 
     cleanForm: function() {
@@ -187,6 +190,20 @@ let prices = Vue.component('prices', {
               mdi-plus
             </v-icon>
             </v-btn> 
+
+
+            <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="initialize"
+          >
+            <v-icon
+            >
+            mdi-reload
+            </v-icon>
+          </v-btn> 
 
 
           <v-btn
