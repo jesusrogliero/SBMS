@@ -4,7 +4,6 @@ const sequelize = require('sequelize');
 const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
-const InvoiceState = require('../models/InvoiceState.js');
 const InvoiceItem = require('../models/InvoiceItem.js');
 const ProductCost = require('../models/ProductCost.js');
 const Product = require('../models/Product.js');
@@ -94,7 +93,7 @@ const invoices_items = {
 
 			let price_prd = parseFloat(product_cost.cost + (product_cost.cost * price.price) );
 			
-			item.subtotal = price_prd * params.quantity;
+			item.subtotal = parseFloat( price_prd * params.quantity ).toFixed(2);
 			item.tax_amount = parseFloat(item.subtotal * tax.percentage);
 			item.total = parseFloat( item.subtotal + item.tax_amount);
 			item.price = price_prd;
@@ -131,11 +130,11 @@ const invoices_items = {
 	 */
 	'show-invoice_item': async function(id) {
 		try {
-			let order = await Invoice.findByPk(id, {raw: true});
+			let item = await InvoiceItem.findByPk(id, {raw: true});
 
-			if( empty(order) ) throw new Error("Esta venta no existe");
+			if( empty(item) ) throw new Error("Error al mostrar los datos de este producto");
 
-			return order;
+			return item;
 
 		} catch (error) {
 			log.error(error);
