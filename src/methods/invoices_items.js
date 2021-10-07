@@ -18,7 +18,7 @@ const invoices_items = {
 	 * 
 	 * @returns prices
 	 */
-	'index-invoices-items': async function() {
+	'index-invoices-items': async function(id) {
 		try {
 			return await InvoiceItem.findAll({
 				attributes: {
@@ -33,6 +33,9 @@ const invoices_items = {
 						attributes: []
 					},
 				],
+				where: {
+					invoice_id: id
+				},
 				raw:true
 			});
 
