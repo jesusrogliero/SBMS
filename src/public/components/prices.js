@@ -240,10 +240,25 @@ let prices = Vue.component('prices', {
                 <v-col cols="12">
                 <v-slider
                   v-model="editedItem.price"
-                  thumb-label
-                  label="Porcentage"
-                ></v-slider>
-              </v-col>
+                  class="align-center"
+                  label="Precio"
+                  max="100"
+                  min="0"
+                >
+                  <template v-slot:append>
+                    <v-text-field
+                      v-model="editedItem.price"
+                      class="mt-n12"
+                      hide-details
+                      single-line
+                      type="number"
+                      disabled
+                      prefix="%"
+                      style="width: 60px"
+                    ></v-text-field>
+                  </template>
+                </v-slider>
+            </v-col>
 
               <v-col cols="12" class="mt-n8 mb-n8">
                 <v-switch
