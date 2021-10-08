@@ -129,7 +129,12 @@ const purchase_orders_items = {
 	 */
 	'show-purchase_item': async function(id) {
 		try {
-			let item = await PurchaseOrderItem.findByPk(id, {raw: true});
+			let item = await PurchaseOrderItem.findByPk(id, {
+				attributes: {
+					include: [ PurchaseOrderItem.sequelize.literal("(tax*100) AS tax") ]
+				},
+				raw: true
+			});
 
 			if( empty(item) ) throw new Error("Este producto no existe");
 
