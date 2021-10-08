@@ -254,6 +254,7 @@ let currencies = Vue.component('currencies', {
                   <v-text-field
                     v-model="editedItem.exchange_rate"
                     label="Tasa de Cambio"
+                    type="number"
                   ></v-text-field>
                 </v-col>
               </v-row>
