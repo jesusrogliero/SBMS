@@ -60,6 +60,7 @@ let products = Vue.component('products', {
 
 	methods: {
 		initialize: async function () {
+			await execute('ajust-stock-combo', {});
 			this.products = await execute('index-products', {});
 			this.pageCount = Math.round(Object.keys(this.products).length / 16);
 		},
@@ -342,6 +343,7 @@ let products = Vue.component('products', {
 					<v-text-field
 					  v-model="editedItem.stock"
 					  label="Existencia"
+					  type="number"
 					  hint="El stock de un combo es calculado automaticamente."
 					></v-text-field>
 				  </v-col>
@@ -385,6 +387,7 @@ let products = Vue.component('products', {
 				v-model="editedItem.cost_combo"
 				label="Costo del combo"
 				prefix="Bs.S"
+				type="number"
 			  ></v-text-field>
 			  </v-col>
 
@@ -414,6 +417,7 @@ let products = Vue.component('products', {
 				  <v-text-field
 					v-model="quantity"
 					label="Cantidad"
+					type="number"
 				  ></v-text-field>
 				</v-col>
 
@@ -442,7 +446,7 @@ let products = Vue.component('products', {
 					  <tr>
 						<th class="text-left">Name</th>
 						<th class="text-left">Cantidad</th>
-									<th class="text-left">Acciones</th>
+						<th class="text-left">Acciones</th>
 					  </tr>
 					</thead>
 					<tbody>
