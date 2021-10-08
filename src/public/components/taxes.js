@@ -237,10 +237,28 @@ let taxes = Vue.component('taxes', {
                 <v-subheader class="pl-0">
                   Porcentage
                 </v-subheader>
+              
                 <v-slider
                   v-model="editedItem.percentage"
-                  thumb-label
-                ></v-slider>
+                  class="align-center"
+                  label="Precio"
+                  max="100"
+                  min="0"
+                >
+                  <template v-slot:append>
+                    <v-text-field
+                      v-model="editedItem.percentage"
+                      class="mt-n12"
+                      hide-details
+                      single-line
+                      type="number"
+                      disabled
+                      prefix="%"
+                      style="width: 60px"
+                    ></v-text-field>
+                  </template>
+                </v-slider>
+      
               </v-col>
 
               </v-row>
