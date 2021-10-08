@@ -15,7 +15,9 @@ let invoices = Vue.component('invoices', {
     pageCount: 1,
     search: "",
     hidden: false,
+    hidden2: false,
     key_component: 0,
+    menu: false,
     headers: [
       {
         text: 'ID',
@@ -34,6 +36,7 @@ let invoices = Vue.component('invoices', {
       { text: 'Acciones', value: 'actions', sortable: false, width: '110px' },
     ],
     invoices: [],
+    date_rage: [],
     editedIndex: -1,
     editedItem: {},
   }),
@@ -41,6 +44,11 @@ let invoices = Vue.component('invoices', {
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'Nueva Venta' : 'Actualizar una Orden de Venta';
+    },
+
+    dateRangeText () {
+      this.date_rage.sort();
+      return this.date_rage.join(' ~ ');
     },
   },
 
@@ -51,6 +59,10 @@ let invoices = Vue.component('invoices', {
     dialogDelete (val) {
       val || this.closeDelete()
     },
+    date_rage: async function(val) {
+        await this.initialize();
+        console.log(val);
+    }
   },
 
   created () {
@@ -61,7 +73,7 @@ let invoices = Vue.component('invoices', {
 
   methods: {
     initialize: async function () {
-        this.invoices = await execute('index-invoices',{});
+        this.invoices = await execute('index-invoices',this.date_rage);
 
         if(Math.round ( Object.keys(this.invoices).length / 16) >= 1) 
           this.pageCount =  Math.round ( Object.keys(this.invoices).length / 16);
@@ -79,6 +91,12 @@ let invoices = Vue.component('invoices', {
             currency_id: '',
         };
         this.key_component++;
+    },
+
+
+    btnDate: function() {
+      this.hidden2 = !this.hidden2;
+      this.date_rage = [];
     },
 
     getSelectClient: function(value) {
@@ -193,15 +211,62 @@ let invoices = Vue.component('invoices', {
       ></v-divider>
 
       <v-scroll-x-reverse-transition>
-      <v-text-field
-        v-show="hidden"
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="Buscar"
-        single-line
-        hide-details
-      ></v-text-field>
+        <v-text-field
+          v-show="hidden"
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Buscar"
+          single-line
+          hide-details
+        ></v-text-field>
+
       </v-scroll-x-reverse-transition>
+
+          <v-menu
+            ref="menu"
+            v-model="menu"
+            :close-on-content-click="false"
+            :return-value.sync="date_rage"
+            transition="scale-transition"
+            offset-y
+            min-width="auto"
+          >
+              <template v-slot:activator="{ on, attrs }">
+                  <v-text-field
+                  class="ml-4 mt-4"
+                  v-model="dateRangeText"
+                  label="Rango de Fecha"
+                  v-show="hidden2"
+                  prepend-icon="mdi-calendar"
+                  readonly
+                  v-bind="attrs"
+                  v-on="on"
+                  ></v-text-field>
+              </template>
+              <v-date-picker
+                  v-model="date_rage"
+                  no-title
+                  scrollable
+                  locale="ES-ve"
+                  range
+              >
+                  <v-spacer></v-spacer>
+                  <v-btn
+                  text
+                  color="primary"
+                  @click="menu = false"
+                  >
+                  Cerrar
+                  </v-btn>
+                  <v-btn
+                  text
+                  color="primary"
+                  @click="$refs.menu.save(date_rage)"
+                  >
+                  OK
+                  </v-btn>
+              </v-date-picker>
+          </v-menu>
 
       <v-spacer></v-spacer>
       
@@ -234,6 +299,20 @@ let invoices = Vue.component('invoices', {
             <v-icon
             >
             mdi-reload
+            </v-icon>
+          </v-btn> 
+
+
+          <v-btn
+            color="primary"
+            icon
+            class="mb-2"
+            v-bind="attrs"
+            @click="btnDate"
+          >
+            <v-icon
+            >
+            mdi-filter
             </v-icon>
           </v-btn> 
 
