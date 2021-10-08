@@ -13,6 +13,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     pageCount: 1,
     search: "",
     hidden: false,
+    key_component: 0,
     headers: [
       {
         text: 'ID',
@@ -95,7 +96,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
             price: '',
             quantity: '',
             tax: 0,
-          }
+          };
+
+          this.key_component++;
     },
 
     getSelectProduct: function(value) {
@@ -139,7 +142,9 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
     editItem: async function(item) {
       this.editedIndex = item.id
       this.editedItem = await execute('show-purchase_item', this.editedIndex);
-      this.dialog = true
+      this.dialog = true;
+
+      this.key_component++;
     },
 
     deleteItem: async function(item) {
@@ -420,7 +425,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
         
         <v-dialog
             v-model="dialog"
-            max-width="500px"
+            max-width="600px"
         >
             <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -481,6 +486,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                             itemValue = "id"
                             :defaultValue = "editedItem.product_id"
                             :getSelect = "getSelectProduct"
+                            :key="key_component"
                         />
                     </v-col>
 
@@ -488,6 +494,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                         <v-text-field
                             v-model="editedItem.quantity"
                             label="Cantidad"
+                            type="number"
                         ></v-text-field>
                     </v-col>
 
@@ -496,15 +503,31 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                             v-model="editedItem.price"
                             label="Precio"
                             :prefix="currency_symbol"
+                            type="number"
                         ></v-text-field>
                     </v-col>
 
                     <v-col cols="6" class="mt-5">
                         <v-slider
-                        v-model="editedItem.tax"
-                        thumb-label
-                        label="Impuesto %"
-                        ></v-slider>
+                          v-model="editedItem.tax"
+                          class="align-center"
+                          label="Impuesto"
+                          max="100"
+                          min="0"
+                        >
+                          <template v-slot:append>
+                            <v-text-field
+                              v-model="editedItem.tax"
+                              class="mt-n12"
+                              hide-details
+                              single-line
+                              type="number"
+                              disabled
+                              prefix="%"
+                              style="width: 60px"
+                            ></v-text-field>
+                          </template>
+                        </v-slider>
                     </v-col>
 
 
