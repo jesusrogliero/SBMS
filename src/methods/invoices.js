@@ -1,6 +1,7 @@
 'use strict'
 
 const sequelize = require('../connection.js');
+const { Op } = require("sequelize");
 const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
@@ -20,9 +21,10 @@ const invoices = {
 	 * 
 	 * @returns invoices
 	 */
-	'index-invoices': async function() {
+	'index-invoices': async function(date) {
 		try {
-			return await Invoice.findAll({
+
+			let query = {
 				attributes: {
 					include: [
 						[sequelize.col('currency.name'), 'currency_name'],
@@ -49,7 +51,26 @@ const invoices = {
 					},
 				],
 				raw:true
-			});
+			};
+
+			if(date.length === 2 ) {
+				query.where = {
+					createdAt: {
+						[Op.gte]: date[0],
+						[Op.lte]: date[1]
+					}
+				}
+			}
+
+			if(date.length === 1 ) {
+				query.where = {
+					createdAt: date[0]
+				}
+			}
+
+			let res = await Invoice.findAll(query);
+			log.info(res);
+			return res;
 
 		} catch (error) {
 			log.error(error);
@@ -132,8 +153,6 @@ const invoices = {
 	 */
 	'approve-invoice': async function(id) {
 
-		const t = await Invoice.sequelize.transaction();
-
 		try {
 
 			let res = await ajust_stock_combo();
@@ -185,24 +204,21 @@ const invoices = {
 				
 						prd.stock = prd.stock - quantity_item;
 
-						await prd.save({transaction: t});
+						await prd.save();
 							
 					});
 				}
 
-				await product.save({transaction: t});
+				await product.save();
 			});
 
 			order.state_id = 3;
-			await order.save({transaction: t});
+			await order.save();
 
-			await t.commit();
 			return {message: "Facturado Correctamente", code: 1 };
 	
-			
 		} catch (error) {
 			log.error(error);
-			await t.rollback();
 			return {message: error.message, code: 0};
 		}
 	},
@@ -241,26 +257,21 @@ const invoices = {
 	 */
 	'destroy-invoice': async function(id) {
 		try {
-			return await Invoice.sequelize.transaction(async (t) => {
+			let order = await Invoice.findByPk(id);
 
-				let order = await Invoice.findByPk(id);
+			if( empty(order) ) throw new Error("Esta venta no existe");
 
-				if( empty(order) ) throw new Error("Esta venta no existe");
-	
-				if(order.state_id != 1) throw new Error("Esta venta ya fue procesada");
-	
-				await InvoiceItem.destroy({
-					where: {
-						invoice_id: order.id
-					},
-					transaction: t
-				});
-	
-				await order.destroy({transaction: t});
-	
-				return {message: "La venta fue eliminada correctamente", code: 1};
-	
+			if(order.state_id != 1) throw new Error("Esta venta ya fue procesada");
+
+			await InvoiceItem.destroy({
+				where: {
+					invoice_id: order.id
+				},
 			});
+
+			await order.destroy();
+
+			return {message: "La venta fue eliminada correctamente", code: 1};
 
 		} catch (error) {
 			log.error(error);
