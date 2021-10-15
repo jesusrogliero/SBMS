@@ -1,7 +1,7 @@
 'use strict'
 
 const sequelize = require('../connection.js');
-const { Op } = require("sequelize");
+const { Op} = require("sequelize");
 const log = require('electron-log');
 const empty = require('../helpers/empty.js');
 const Invoice = require('../models/Invoice.js');
@@ -68,9 +68,51 @@ const invoices = {
 				}
 			}
 
-			let res = await Invoice.findAll(query);
-			log.info(res);
-			return res;
+			return await Invoice.findAll(query);
+		
+		} catch (error) {
+			log.error(error);
+			return { message: error.message, code:0} ;
+		}
+	},
+
+
+	/**
+	 * mustra el total vendido hoy
+	 * 
+	 * @returns invoices
+	 */
+	'get-sold-today': async function() {
+		try {
+
+			let invoices = await Invoice.findAll({
+				where: {
+					createdAt: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+					state_id: 3
+				},
+				raw: true
+			});
+
+			const default_currency = await Currency.findByPk(1);
+
+			let sold_today = 0;
+
+			for (let i = 0; i < invoices.length; i++) {
+
+				let currency = await Currency.findByPk(invoices[i].currency_id);
+
+				let exchange_rate = currency.exchange_rate / default_currency.exchange_rate;
+
+				let monto = invoices[i].total * exchange_rate;
+
+				sold_today = monto + sold_today;
+			}
+
+
+			return {
+				sold: parseFloat( sold_today ).toFixed(2),
+				symbol: default_currency.symbol
+			};
 
 		} catch (error) {
 			log.error(error);
@@ -78,6 +120,56 @@ const invoices = {
 		}
 	},
 
+
+		/**
+	 * mustra el total vendido hoy
+	 * 
+	 * @returns invoices
+	 */
+		 'get-sold-week': async function() {
+			try {
+
+				let today = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
+				let last_week = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 2204800)).toISOString().substr(0, 10);
+				
+				let invoices = await Invoice.findAll({
+					where: {
+						createdAt: {
+							[Op.between]: [last_week, today],  
+						},
+						state_id: 3
+					},
+					raw: true
+				});
+
+	
+				const default_currency = await Currency.findByPk(1);
+	
+				let sold_week = 0;
+	
+				for (let i = 0; i < invoices.length; i++) {
+	
+					let currency = await Currency.findByPk(invoices[i].currency_id);
+	
+					let exchange_rate = currency.exchange_rate / default_currency.exchange_rate;
+	
+					let monto = invoices[i].total * exchange_rate;
+	
+					sold_week = monto + sold_week;
+				}
+				
+				return {
+					sold: parseFloat( sold_week ).toFixed(2),
+					symbol: default_currency.symbol
+				};
+	
+			} catch (error) {
+				log.error(error);
+				return { message: error.message, code:0} ;
+			}
+		},
+		
+	
 
 
     /**
@@ -104,10 +196,10 @@ const invoices = {
             order =  await Invoice.create({
 				state_id: 1,
                 client_id: params.client_id,
-                currency_id: params.currency_id,
+                currency_id: params.currency_id
             });
-
-            return {message: "Agregado con exito", code: 1};
+			
+            return {invoice: order.dataValues, message: "Agregado con exito", code: 1};
             
         } catch (error) {
 			
@@ -145,6 +237,44 @@ const invoices = {
 	},
 
 
+
+	/**
+	 * funcion que ve si un cliente tiene una factura pendiente
+	 * 
+	 * @param {int} id 
+	 * @returns {json} invoice
+	 */
+	'show-invoice-client': async function(client_id) {
+		try {
+			let order = await Invoice.findOne({
+				attributes: {
+					include: [
+						[sequelize.col('currency.symbol'), 'currency_symbol'],
+					]
+				},
+				include: [
+					{
+						model: Currency,
+						required: true,
+						attributes: []
+					},
+				],
+
+				where: {
+					client_id: client_id,
+					state_id: 1
+				},
+				raw: true
+			});
+
+			return order;
+
+		} catch (error) {
+			log.error(error);
+			return {message: error.message, code: 0};
+		}
+	},
+
     /**
 	 * funcion que aprueba una venta
 	 * 
@@ -173,14 +303,14 @@ const invoices = {
 				raw: true
 			});
 
-			
-			items.forEach(async (item) => {
-				let product = await Product.findByPk(item.product_id);
-				
-				if( (product.stock - item.quantity) <= 0 )
-					throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
 
-				product.stock = product.stock - item.quantity;
+			// valido que haya stock disponible
+			for (let i = 0; i < items.length; i++) {
+				let product = await Product.findByPk(items[i].product_id);
+				
+				if( (product.stock - items[i].quantity) < 0 )
+					throw new Error(`No es posible facturar este producto: ${product.name} por falta de existencia`);
+				
 
 				// si se trata de un combo
 				if(product.product_type_id === 2) {
@@ -191,26 +321,62 @@ const invoices = {
 						}
 					});
 
+
 					// recorro todos los items del combo
-					comboItems.forEach( async comboItem => {
-						let prd = await Product.findByPk(comboItem.product_id);
+					for (let j = 0; j < comboItems.length; j++) {
+					
+						let prd = await Product.findByPk(comboItems[j].product_id);
 
 						// calculo la cantidad de producto segun la cantidad de combo que facture
-						let quantity_item = comboItem.quantity * item.quantity;
+						let quantity_item = comboItems[j].quantity * items[i].quantity;
 
 						// verifico que haya existencia
-						if( (prd.stock - quantity_item) <= 0 ) 
+						if( (prd.stock - quantity_item) < 0 ) 
+							throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
+		
+					}
+
+				}
+			}
+
+
+			for (let i = 0; i < items.length; i++) {
+
+				let product = await Product.findByPk(items[i].product_id);
+				product.stock = product.stock - items[i].quantity;
+
+				// si se trata de un combo
+				if(product.product_type_id === 2) {
+					
+					let comboItems = await ComboItem.findAll({
+						where: {
+							combo_id: product.id,
+						}
+					});
+
+
+					// recorro todos los items del combo
+					for (let j = 0; j < comboItems.length; j++) {
+					
+						let prd = await Product.findByPk(comboItems[j].product_id);
+
+						// calculo la cantidad de producto segun la cantidad de combo que facture
+						let quantity_item = comboItems[j].quantity * items[i].quantity;
+
+						// verifico que haya existencia
+						if( (prd.stock - quantity_item) < 0 ) 
 							throw new Error(`No es posible facturar este combo: ${product.name} por falta de stock en el producto: ${prd.name}`);
 				
 						prd.stock = prd.stock - quantity_item;
 
-						await prd.save();
-							
-					});
+						await prd.save();	
+					}
+
 				}
 
 				await product.save();
-			});
+			}
+
 
 			order.state_id = 3;
 			await order.save();
