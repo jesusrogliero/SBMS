@@ -1,20 +1,25 @@
 'use strict'
 
 import '../utils/autocomplete.js';
+import './widget_invoice.js';
 
 // componente home
 let home = Vue.component('home', {
 
 	data: function() {
-			return {
-				exchange_rate: 0,
-				sales_today: null,
-				sales_week: null,
-				currency_default: "",
-				products_prices: [],
-				product_id: null,
-				currency_id: 1,
-			}
+		return {
+			exchange_rate: 0,
+			sales_today: null,
+			sales_week: null,
+			currency_default: "",
+			products_prices: [],
+			product_id: null,
+			currency_id: 1,
+			widget_invoice_dialog: false,
+			sold_today: {},
+			sold_week: {}
+
+		}
 	},
 
 	created: async function() {
@@ -22,6 +27,14 @@ let home = Vue.component('home', {
 		this.currency_default = await execute('show-currency', 1);
 
 		this.exchange_rate = formatMoney( currency.exchange_rate);
+		this.sold_today = await execute('get-sold-today');
+		this.sold_week = await execute('get-sold-week');
+	},
+
+	computed: {
+		formTitle() {
+			return this.editedIndex === -1 ? 'Añadir un Producto' : 'Actualizar un Producto';
+		},
 	},
 
 	watch: {
@@ -42,6 +55,11 @@ let home = Vue.component('home', {
 
 		format_money: function(price, symbol) {
 			return `${formatMoney(price)} ${symbol}`;
+		},
+
+		updateSales: async function() {
+			this.sold_today = await execute('get-sold-today');
+			this.sold_week = await execute('get-sold-week');
 		},
 
 		adjust_exchange: async function() {
@@ -66,12 +84,12 @@ let home = Vue.component('home', {
 
 		},
 
-		getSelectProduct: async function(val) {
-			this.product_id = val;
+		getSelectProduct: function(product_id) {
+			this.product_id = product_id;
 		},
 
-		getSelectCurrency: async function(val) {
-			this.currency_id = val;
+		getSelectCurrency: function(currency_id) {
+			this.currency_id = currency_id;
 		},
 
 		getProductPrice: async function() {
@@ -93,32 +111,37 @@ let home = Vue.component('home', {
 
 		},
 
-		get_sales_today: async function() {
-
+		openWidgetInvoiceDialog: function(){
+			this.widget_invoice_dialog = true;
 		},
 
+		closeWidgetInvoiceDialog: function() {
+			this.widget_invoice_dialog = false;
+		},
 
-		get_sales_week: async function() {
+		toClients: function() { this.$router.push('/clients'); },
 
-		}
+		toPurchases: function() { this.$router.push('/purchases_orders')},
 	},
 
 
 	template: `
 		<v-container class="mt-10">
+
 			<v-row>
 
 				<v-col>
 				<v-card color="pink lighten-4">
-					<v-card-title>Vendido Hoy</v-card-title>
-					<v-card-text class="text-h4">$50,000</v-card-text>
+					<v-card-title>Vendido Hoy <v-btn class="ml-2" icon @click="updateSales"> <v-icon>mdi-refresh</v-icon> </v-btn></v-card-title>
+
+					<v-card-text class="text-h4">{{sold_today.sold + ' ' + sold_today.symbol}}</v-card-text>
 				</v-card>
 				</v-col>
 
 				<v-col>
 				<v-card color="indigo lighten-4">
-					<v-card-title>Ventas esta semana</v-card-title>
-					<v-card-text class="text-h4">$4,323.52</v-card-text>
+					<v-card-title>Ventas ultimos 7 dias</v-card-title>
+					<v-card-text class="text-h4">{{sold_week.sold + ' ' + sold_week.symbol}}</v-card-text>
 				</v-card>
 				</v-col>
 
@@ -141,8 +164,17 @@ let home = Vue.component('home', {
 
 			<v-row>
 
+
 			<v-col>
-			<v-card color="indigo lighten-4" class="pb-2" elevation="5">
+
+
+			<widget_invoice
+				:active="widget_invoice_dialog"
+				:hidde="closeWidgetInvoiceDialog"
+			></widget_invoice>
+
+
+			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="openWidgetInvoiceDialog">
 				<p class="title text-center"> Nueva venta</p>
 				<v-img
 				class="mx-auto"
@@ -150,12 +182,12 @@ let home = Vue.component('home', {
 				max-width="100"
 				src="../public/resources/images/venta.png"
 			></v-img>
-			
 			</v-card>
+
 			</v-col>
 
 			<v-col>
-			<v-card color="indigo lighten-4" class="pb-2" elevation="5">
+			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="toPurchases">
 			<p class="title text-center"> Ingresar Mercancia</p>
 				<v-img
 				class="mx-auto"
@@ -167,7 +199,7 @@ let home = Vue.component('home', {
 			</v-col>
 
 			<v-col>
-			<v-card color="indigo lighten-4" class="pb-2" elevation="5">
+			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="toClients">
 			<p class="title text-center">Clientes</p>
 				<v-img
 					class="mx-auto"
