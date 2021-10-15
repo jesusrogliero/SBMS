@@ -107,6 +107,7 @@ let products = {
             const product = await Product.create({
                 name: params.name,
                 taxId: params.taxId,
+                stock: params.stock,
                 product_type_id: params.product_type_id
             });
 
@@ -381,7 +382,6 @@ let products = {
 
             product.items = items;
 
-            console.log(product);
             return product;
 
         } catch (error) {
