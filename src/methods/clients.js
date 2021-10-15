@@ -42,9 +42,9 @@ const clients = {
                 lastname: params.lastname,
                 cedula: params.cedula
             });
+			
 
-
-            return {message: "Agregado con exito", code: 1};
+            return {id: new_client.id, message: "Agregado con exito", code: 1};
         } catch (error) {
 
 			if( !empty( error.errors ) ){
