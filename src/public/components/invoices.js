@@ -61,7 +61,6 @@ let invoices = Vue.component('invoices', {
     },
     date_rage: async function(val) {
         await this.initialize();
-        console.log(val);
     }
   },
 
