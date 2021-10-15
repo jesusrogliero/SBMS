@@ -59,19 +59,14 @@ const invoices_items = {
 
             let order = await Invoice.findByPk(params.invoice_id);
 
-            if( Object.keys(order).length === 0 ) {
-                order = await Invoice.create({
-                    state_id: 1,
-                    client_id: client.id,
-                    currency_id: params.currency_id,
-                    invoice_id: params.invoice_id
-                });
-            }
+			if( empty(order) ) throw new Error('Ocurrio un error al ingresar el producto a la orden');
 
 			const product = await Product.findByPk(params.product_id, {raw: true});
 
 			if( empty(product) )
 				throw new Error('El producto seleccionado no existe');
+
+			if( (product.stock - params.quantity) < 0 ) throw new Error('Existencia del producto excedida');
 
 			const product_cost = await ProductCost.findOne({
 				where: {
@@ -91,17 +86,28 @@ const invoices_items = {
 				quantity: params.quantity
 			});
 
-			let price_prd = parseFloat(product_cost.cost + (product_cost.cost * price.price) );
-			
-			item.subtotal = parseFloat( price_prd * params.quantity ).toFixed(2);
-			item.tax_amount = parseFloat(item.subtotal * tax.percentage);
-			item.total = parseFloat( item.subtotal + item.tax_amount);
+			let price_prd = product_cost.cost + (product_cost.cost * price.price);
+
+			item.subtotal = price_prd * params.quantity ;
+			item.tax_amount = item.subtotal * tax.percentage;
+			item.total = item.subtotal + item.tax_amount;
 			item.price = price_prd;
+
 
 			order.tax_amount = order.tax_amount + item.tax_amount;
 			order.subtotal = order.subtotal + item.subtotal;
 			order.total = order.total + item.total;
 			order.total_products = order.total_products + 1;
+
+
+			item.subtotal = parseFloat(item.subtotal).toFixed(2);
+			item.tax_amount = parseFloat(item.tax_amount).toFixed(2);
+			item.total = parseFloat(item.total).toFixed(2);
+			item.price = parseFloat(item.price).toFixed(2);
+
+			order.tax_amount = parseFloat( order.tax_amount).toFixed(2);
+			order.subtotal = parseFloat(order.subtotal).toFixed(2);
+			order.total = parseFloat(order.total).toFixed(2);
 
 			await item.save();
 			await order.save();
@@ -151,11 +157,14 @@ const invoices_items = {
 	 */
 	'update-invoice_item': async function(params) {
 		try {
-			const item = await InvoiceItem.findByPk(params.id, {raw: true});
+
+			if(params.quantity < 1) throw new Error('La cantidad de producto es incorrecta');
+
+			const item = await InvoiceItem.findByPk(params.id);
 
 			if( empty(item) ) throw new Error("Este producto no existe");
 
-			const order = await Invoice.findByPk(params.invoice_id, {raw: true});
+			const order = await Invoice.findByPk(params.invoice_id);
 
 			if( order.state_id != 1) throw new Error('Esta orden ya fue procesada');
 
@@ -163,15 +172,27 @@ const invoices_items = {
 			order.tax_amount = order.tax_amount - item.tax_amount;
 			order.total = order.total - item.total;
 
+			const product = await Product.findByPk(item.product_id);
 			const tax = await Tax.findByPk(product.taxId);
 
-			item.subtotal = parseFloat( params.quantity * item.price).toFixed(2);
-			item.tax_amount = parseFloat(item.subtotal * tax.percentage).toFixed(2);
+			if( (product.stock - params.quantity) < 0 ) throw new Error('Existencia del producto excedida');
+
+			item.quantity = parseInt( params.quantity );
+			item.subtotal = params.quantity * item.price;
+			item.tax_amount = item.subtotal * tax.percentage;
 			item.total = item.subtotal + item.tax_amount;
 
 			order.subtotal = order.subtotal + item.subtotal;
 			order.tax_amount = order.tax_amount + item.tax_amount;
 			order.total = order.total + item.total;
+
+			item.subtotal = parseFloat(item.subtotal).toFixed(2);
+			item.tax_amount = parseFloat(item.tax_amount).toFixed(2);
+			item.total = parseFloat(item.total).toFixed(2);
+
+			order.tax_amount = parseFloat( order.tax_amount).toFixed(2);
+			order.subtotal = parseFloat(order.subtotal).toFixed(2);
+			order.total = parseFloat(order.total).toFixed(2);
 
 			await item.save();
 			await order.save();
