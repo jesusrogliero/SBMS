@@ -74,7 +74,6 @@ let invoicesDialog = Vue.component('invoices-dialog', {
 
 	methods: {
 		initialize: async function () {
-			console.log(this.id);
 			this.invoice = await execute('show-invoice', this.id);
 			this.invoice_items = await execute('index-invoices-items', this.id);
 
@@ -129,13 +128,14 @@ let invoicesDialog = Vue.component('invoices-dialog', {
 			} else {
 				alertApp({ color: "error", text: result, icon: "alert" });
 			}
+      
 			this.initialize();
 
 		},
 
 		editItem: async function (item) {
 			
-			this.editedIndex = this.id;
+			this.editedIndex = item.id;
 			this.editedItem = await execute('show-invoice_item', this.editedIndex);
 
 			if (this.editedItem.code == 0) {
