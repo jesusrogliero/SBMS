@@ -94,7 +94,6 @@ const currencies = {
 	
 				if(currency === null) throw new Error("Esta moneda no existe");
 				
-				console.log(currency);
 				return currency;
 	
 			} catch (error) {
