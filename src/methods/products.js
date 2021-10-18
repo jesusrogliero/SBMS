@@ -13,6 +13,7 @@ const Prices = require('../models/Price.js');
 const createCosts = require('./products_costs.js')['create-cost'];
 const updateCosts = require('./products_costs.js')['update-cost'];
 
+
 let products = {
 
     /**
@@ -151,8 +152,7 @@ let products = {
 
                 if (result.code === 0) throw new Error(result.message);
 
-                this['ajust-stock-combo']();
-
+        
                 return { message: "Combo Agregado con exito", code: 1 };
 
             }
