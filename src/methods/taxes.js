@@ -141,6 +141,8 @@ let Taxes = {
             let tax = await Tax.findByPk(id);
 
             if (tax === null) throw new Error("El impuesto no existe");
+
+            if(tax.id === 1) throw new Error("No es Posible eliminar este Impuesto");
             
             tax.destroy();
 
