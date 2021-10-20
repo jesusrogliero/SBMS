@@ -289,14 +289,17 @@ let clients = Vue.component('clients', {
   <template v-slot:item.actions="{ item }">
     <v-icon
       dense
+      v-if="item.cedula !== 0"
       class="mr-2"
       @click="editItem(item)"
       color="primary"
     >
       mdi-pencil
     </v-icon>
+
     <v-icon
       dense
+      v-if="item.cedula !== 0"
       @click="deleteItem(item)"
       color="error"
     >
