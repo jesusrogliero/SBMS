@@ -33,7 +33,7 @@ const providers = {
             const new_provider =  await Provider.create({
                 full_name: params.full_name,
                 phone: params.phone,
-
+				rif: params.rif
             });
 
             return {message: "Agregado con exito", code: 1};
@@ -91,6 +91,7 @@ const providers = {
 
 			provider.full_name = params.full_name;
 			provider.phone = params.phone;
+			provider.rif = params.rif;
 
 			await provider.save();
 

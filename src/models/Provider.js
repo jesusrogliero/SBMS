@@ -28,6 +28,10 @@ const Provider = sequelize.define("providers", {
         type: DataTypes.TEXT,
     },
 
+    rif: {
+        type: DataTypes.TEXT
+    },
+
     createdAt: {
         type: DataTypes.DATEONLY,
         allowNull: false

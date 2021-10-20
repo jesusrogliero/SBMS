@@ -19,6 +19,7 @@ let costs = Vue.component('costs', {
       },
       { text: 'Nombre', value: 'full_name' },
       { text: 'Telefono', value: 'phone' },
+      { text: 'RIF', value: 'rif' },
       { text: 'Creado', value: 'createdAt' },
       { text: 'Actualizado', value: 'updatedAt' },
       { text: 'Acciones', value: 'actions', sortable: false },
@@ -61,6 +62,7 @@ let costs = Vue.component('costs', {
             id: '',
             full_name: '',
             phone: '',
+            rif: ''
         };
     },
 
@@ -245,7 +247,12 @@ let costs = Vue.component('costs', {
                     ></v-text-field>
               </v-col>
 
-
+              <v-col cols="12" >
+				<v-text-field
+				v-model="editedItem.rif"
+				label="RIF"
+				></v-text-field>
+              </v-col>
 
               </v-row>
             </v-container>
