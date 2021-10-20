@@ -90,7 +90,6 @@ const clients = {
 	'update-client': async function(params) {
 
 		try {
-
 			if( empty(params.name) ) throw new Error("El nombre del cliente es obligatorio");
 			if( empty(params.lastname) ) throw new Error("El apellido del cliente es obligatorio");
 			if( empty(params.cedula) ) throw new Error("La cedula del cliente es obligatorio");
@@ -98,6 +97,8 @@ const clients = {
 			let client = await Client.findByPk(params.id);
 			
 			if( client === null) throw new Error("El cliente no existe");
+
+			if(client.cedula === 0) throw new Error('No es posible editar este Cliente');
 
 			client.name = params.name;
 			client.lastname = params.lastname;
