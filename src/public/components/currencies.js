@@ -305,6 +305,7 @@ let currencies = Vue.component('currencies', {
     </v-icon>
     <v-icon
       dense
+      v-if="item.exchange_rate !== 1"
       @click="deleteItem(item)"
       color="error"
     >
