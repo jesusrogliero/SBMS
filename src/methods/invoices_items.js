@@ -57,7 +57,7 @@ const invoices_items = {
 
             if(params.quantity < 1) throw new Error('La cantidad de producto es incorrecta');
 
-            let order = await Invoice.findByPk(params.invoice_id);
+			let order = await Invoice.findByPk(params.invoice_id);
 
 			if( empty(order) ) throw new Error('Ocurrio un error al ingresar el producto a la orden');
 
@@ -80,7 +80,16 @@ const invoices_items = {
 
 			const tax = await Tax.findByPk(product.taxId, {raw: true});
 
-			const item = InvoiceItem.build({
+			let item = await InvoiceItem.findOne({
+				where: {
+					product_id: params.product_id,
+					invoice_id: order.id
+				}
+			});
+
+			if( !empty(item) ) throw new Error('Este producto ya fue agregado');
+
+			item = InvoiceItem.build({
 				product_id: params.product_id,
 				invoice_id: order.id,
 				quantity: params.quantity
