@@ -99,9 +99,7 @@ const invoices = {
 
 			for (let i = 0; i < invoices.length; i++) {
 
-				let currency = await Currency.findByPk(invoices[i].currency_id);
-
-				let exchange_rate = currency.exchange_rate / default_currency.exchange_rate;
+				let exchange_rate = invoices[i].exchange_rate / default_currency.exchange_rate;
 
 				let monto = invoices[i].total * exchange_rate;
 
@@ -121,12 +119,12 @@ const invoices = {
 	},
 
 
-		/**
+	/**
 	 * mustra el total vendido hoy
 	 * 
 	 * @returns invoices
 	 */
-		 'get-sold-week': async function() {
+		'get-sold-week': async function() {
 			try {
 
 				let today = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
@@ -149,9 +147,7 @@ const invoices = {
 	
 				for (let i = 0; i < invoices.length; i++) {
 	
-					let currency = await Currency.findByPk(invoices[i].currency_id);
-	
-					let exchange_rate = currency.exchange_rate / default_currency.exchange_rate;
+					let exchange_rate = invoices[i].exchange_rate / default_currency.exchange_rate;
 	
 					let monto = invoices[i].total * exchange_rate;
 	
@@ -192,11 +188,14 @@ const invoices = {
 			if( !empty(order) )
 				throw new Error(`Este cliente ya tiene una venta pendiente: Orden Nº ${order.id}`);
 
+			const currency = await Currency.findByPk(1);
+
             // creo una nueva compra
             order =  await Invoice.create({
 				state_id: 1,
                 client_id: params.client_id,
-                currency_id: params.currency_id
+                currency_id: 1,
+				exchange_rate: currency.exchange_rate
             });
 			
             return {invoice: order.dataValues, message: "Agregado con exito", code: 1};
@@ -224,7 +223,26 @@ const invoices = {
 	 */
 	'show-invoice': async function(id) {
 		try {
-			let order = await Invoice.findByPk(id, {raw: true});
+
+			let order = await Invoice.findOne({
+				attributes: {
+					include: [
+						[sequelize.col('currency.symbol'), 'currency_symbol'],
+					]
+				},
+				include: [
+					{
+						model: Currency,
+						required: true,
+						attributes: []
+					},
+				],
+
+				where: {
+					id: id
+				},
+				raw: true
+			});
 
 			if( empty(order) ) throw new Error("Esta venta no existe");
 
@@ -302,6 +320,10 @@ const invoices = {
 				where: { invoice_id: order.id },
 				raw: true
 			});
+
+
+			if(items.length === 0)
+				throw new Error('No es posible aprobar una orden sin productos');
 
 
 			// valido que haya stock disponible
@@ -403,11 +425,77 @@ const invoices = {
 
 			if( empty(order) ) throw new Error("Esta venta no existe");
 
+			// busco todos los items de la orden
+			let items = await InvoiceItem.findAll({
+				where: { invoice_id: order.id },
+				raw: true
+			});
+
+
+			if( items.length === 0 )
+				throw new Error('No es posible generar una orden sin productos');
+
 			order.state_id = 2;
 			await order.save();
 
 			return {message: "La venta fue generada correctamente", code: 1 };
 			
+		} catch (error) {
+			log.error(error);
+			return {message: error.message, code: 0};
+		}
+	},
+
+
+	/**
+	 * funcion que actualiza un recurso
+	 * 
+	 * @param {*} params 
+	 * @returns message
+	 */
+	 'update-invoice': async function(params) {
+		try {
+			let order = await Invoice.findByPk(params.id);
+
+			if( empty(order) ) throw new Error("Esta venta no existe");
+
+			if(order.state_id != 1) throw new Error("Esta venta ya fue procesada");
+
+			const items = await InvoiceItem.findAll({
+				where: {
+					invoice_id: order.id
+				}
+			});
+
+			// en caso que hayan items
+			if(!empty(items)) {
+
+				const currency = await Currency.findByPk(params.currency_id);
+				const currency_order = await Currency.findByPk(order.currency_id);
+
+				const exchange_rate = currency_order.exchange_rate / currency.exchange_rate;
+
+				for (let i = 0; i < items.length; i++) {
+					
+					items[i].price  = items[i].price * exchange_rate;
+					items[i].subtotal = items[i].subtotal * exchange_rate;
+					items[i].tax_amount = items[i].tax_amount * exchange_rate;
+					items[i].total = items[i].total * exchange_rate;
+
+					await items[i].save();
+				}
+
+				order.tax_amount = parseFloat( order.tax_amount * exchange_rate ).toFixed(2);
+				order.subtotal = parseFloat( order.subtotal * exchange_rate ).toFixed(2);
+				order.total = parseFloat( order.total * exchange_rate ).toFixed(2);
+				order.exchange_rate = currency.exchange_rate;
+			}
+
+
+			order.currency_id = params.currency_id;
+			await order.save();
+			return {message: "Actualizado Correctamente", code: 1};
+
 		} catch (error) {
 			log.error(error);
 			return {message: error.message, code: 0};
