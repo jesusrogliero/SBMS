@@ -33,6 +33,7 @@ const Invoice = sequelize.define("invoices", {
     state_id: {
         type: DataTypes.NUMBER,
         allowNull: false,
+        defaultValue: 1,
         references: {
             model: "invoices_states",
             key: "id"
@@ -54,6 +55,11 @@ const Invoice = sequelize.define("invoices", {
                 msg: "La moneda ingresada no es valida"
             }
         }
+    },
+
+    exchange_rate: {
+        type: DataTypes.NUMBER,
+        allowNull: false
     },
 
     tax_amount: {
