@@ -6,12 +6,14 @@ let invoicesDialog = Vue.component('invoices-dialog', {
 
 	data: () => ({
 		dialog: false,
+    dialog_currency: false,
 		dialogDelete: false,
 		page: 1,
 		pageCount: 1,
 		search: "",
 		hidden: false,
 		key_component: 0,
+    key_currency: 0,
 		headers: [
 			{
 				text: 'ID',
@@ -75,6 +77,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
 	methods: {
 		initialize: async function () {
 			this.invoice = await execute('show-invoice', this.id);
+      console.log(this.invoice);
 			this.invoice_items = await execute('index-invoices-items', this.id);
 
 			if (Math.round(Object.keys(this.invoice_items).length / 16) >= 1)
@@ -106,6 +109,42 @@ let invoicesDialog = Vue.component('invoices-dialog', {
 		getSelectPrice: function (value) {
 			this.editedItem.price_id = value;
 		},
+
+
+    getSelectCurrencyInvoice: function (value) {
+			this.invoice.currency_id = value;
+		},
+
+    updateCurrencyInvoice: async function() {
+
+      const result = await execute('update-invoice', {
+        id: this.invoice.id,
+        currency_id: this.invoice.currency_id
+      });
+
+
+			if (result.code === 1) {
+				alertApp({ color: "success", text: result, icon: "check" });
+        await this.initialize();
+        this.currency = await execute('show-currency', this.invoice.currency_id);
+				this.dialog_currency = false;
+        this.key_currency++;
+        
+			} else {
+				alertApp({ color: "error", text: result, icon: "alert" });
+			}
+      
+    },
+
+    openDialogCurrency: function() {
+      this.key_currency++;
+      this.dialog_currency = true;
+    },
+
+    closeDialogCurrency: function() {
+      this.initialize();
+      this.dialog_currency = false;
+    },
 
 		saveOrder: async function () {
 			let result = await execute('generate-invoice', this.id);
@@ -335,12 +374,12 @@ let invoicesDialog = Vue.component('invoices-dialog', {
           <v-col cols="6">{{client.name}}</v-col>
           </v-row>
 
-          <v-row>
+          <v-row v-if="client.id !== 1" >
           <v-col cols="6" class="font-weight-black" >Apellido:</v-col>
           <v-col cols="6">{{client.lastname}}</v-col>
           </v-row>
 
-          <v-row>
+          <v-row v-if="client.id !== 1">
           <v-col cols="6" class="font-weight-black" >Cedula:</v-col>
           <v-col cols="6">{{client.cedula}}</v-col>
           </v-row>
@@ -387,6 +426,58 @@ let invoicesDialog = Vue.component('invoices-dialog', {
         </v-scroll-x-reverse-transition>
 
         <v-spacer></v-spacer>
+
+
+        <v-dialog
+          v-model="dialog_currency"
+          max-width="290"
+        >
+        <v-card>
+          <v-card-title class="text-h5">
+            Actualizar moneda de la orden
+          </v-card-title>
+  
+          <v-card-text>
+          <v-row>
+
+          <v-col cols = "12">
+              <autocomplete-form
+                  uri = "index-currencies"
+                  label = "Selecciona el Producto"
+                  column = "name"
+                  itemValue = "id"
+                  :defaultValue = "invoice.currency_id"
+                  :getSelect = "getSelectCurrencyInvoice"
+                  :key="key_component"
+              />
+          </v-col>
+
+          </v-row>
+          </v-card-text>
+  
+          <v-card-actions>
+            <v-spacer></v-spacer>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="closeDialogCurrency"
+            >
+              Cancelar
+            </v-btn>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="updateCurrencyInvoice"
+            >
+              Guardar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
         
         <v-dialog
             v-model="dialog"
@@ -405,7 +496,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                 mdi-plus
                 </v-icon>
                 </v-btn> 
-
+                  
 
                 <v-btn
                 color="primary"
@@ -417,6 +508,19 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                 <v-icon
                 >
                 mdi-reload
+                </v-icon>
+              </v-btn> 
+
+              <v-btn
+                color="primary"
+                icon
+                class="mb-2"
+                v-bind="attrs"
+                @click="openDialogCurrency"
+              >
+                <v-icon
+                >
+                mdi-currency-usd
                 </v-icon>
               </v-btn> 
 
@@ -467,7 +571,7 @@ let invoicesDialog = Vue.component('invoices-dialog', {
                             v-model="editedItem.price"
                             label="Precio"
                             :prefix="currency_symbol"
-							disabled
+							              disabled
                         ></v-text-field>
                     </v-col>
 
