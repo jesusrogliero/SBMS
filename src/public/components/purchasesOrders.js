@@ -16,6 +16,7 @@ let purchases = Vue.component('purchases-orders', {
     search: "",
     hidden: false,
     menu: false,
+    key_component: 0,
     headers: [
       {
         text: 'ID',
@@ -82,6 +83,7 @@ let purchases = Vue.component('purchases-orders', {
             provider_id: '',
             currency_id: '',
           }
+          this.key_component++;
     },
 
     getSelectProvider: function(value) {
@@ -93,6 +95,7 @@ let purchases = Vue.component('purchases-orders', {
     },
 
     editItem: async function(item) {
+      this.key_component++;
       this.editedIndex = item.id
       this.editedItem = await execute('show-price', this.editedIndex);
       this.dialog = true
@@ -273,6 +276,7 @@ let purchases = Vue.component('purchases-orders', {
                         itemValue = "id"
                         :defaultValue = "editedItem.provider_id"
                         :getSelect = "getSelectProvider"
+                        :key="key_component"
                     />
                 </v-col>
 
@@ -284,6 +288,7 @@ let purchases = Vue.component('purchases-orders', {
                         itemValue = "id"
                         :defaultValue = "editedItem.currency_id"
                         :getSelect = "getSelectCurrency"
+                        :key="key_component"
                     />
                 </v-col>
 
