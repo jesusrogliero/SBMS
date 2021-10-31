@@ -182,18 +182,21 @@ let currencies = Vue.component('currencies', {
         max-width="500px"
       >
         <template v-slot:activator="{ on, attrs }">
+
           <v-btn
             color="primary"
             icon
             class="mb-2"
             v-bind="attrs"
             v-on="on"
+            v-if="false"
           >
             <v-icon
             >
               mdi-plus
             </v-icon>
             </v-btn> 
+
 
 
             <v-btn
@@ -252,6 +255,7 @@ let currencies = Vue.component('currencies', {
                   cols="12"
                 >
                   <v-text-field
+                    v-if="editedItem.id !== 1"
                     v-model="editedItem.exchange_rate"
                     label="Tasa de Cambio"
                     type="number"
@@ -303,14 +307,7 @@ let currencies = Vue.component('currencies', {
     >
       mdi-pencil
     </v-icon>
-    <v-icon
-      dense
-      v-if="item.exchange_rate !== 1"
-      @click="deleteItem(item)"
-      color="error"
-    >
-      mdi-delete
-    </v-icon>
+    
   </template>
 
 
