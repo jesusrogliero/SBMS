@@ -11,12 +11,6 @@ let clients = Vue.component('clients', {
     search: "",
     hidden: false,
     headers: [
-      {
-        text: 'ID',
-        align: 'start',
-        sortable: false,
-        value: 'id',
-      },
       { text: 'Nombre', value: 'name' },
       { text: 'Apellido', value: 'lastname' },
       { text: 'Cedula', value: 'cedula' },
