@@ -501,7 +501,7 @@ let purchasesOrdersDialog = Vue.component('purchases-orders-dialog', {
                     <v-col cols="6" >
                         <v-text-field
                             v-model="editedItem.price"
-                            label="Precio"
+                            label="Precio Unitario"
                             :prefix="currency_symbol"
                             type="number"
                         ></v-text-field>
