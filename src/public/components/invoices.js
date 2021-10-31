@@ -86,8 +86,7 @@ let invoices = Vue.component('invoices', {
     cleanForm: function() {
         this.editedItem = {
             id: '',
-            client_id: '',
-            currency_id: '',
+            client_id: 1
         };
         this.key_component++;
     },
@@ -350,19 +349,6 @@ let invoices = Vue.component('invoices', {
                         :key="key_component"
                     />
                 </v-col>
-
-                <v-col cols = "6">
-                    <autocomplete-form
-                        uri = "index-currencies"
-                        label = "Selecciona la Moneda"
-                        column = "name"
-                        itemValue = "id"
-                        :defaultValue = "editedItem.currency_id"
-                        :getSelect = "getSelectCurrency"
-                        :key="key_component"
-                    />
-                </v-col>
-
                 </v-row>
             </v-container>
           </v-card-text>
