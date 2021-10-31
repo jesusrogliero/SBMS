@@ -19,7 +19,6 @@ let prices = Vue.component('prices', {
       },
       { text: 'Nombre', value: 'name' },
       { text: 'Precio', value: 'price' },
-      { text: 'Predeterminado', value: 'is_default' },
       { text: 'Creado', value: 'createdAt' },
       { text: 'Actualizado', value: 'updatedAt' },
       { text: 'Acciones', value: 'actions', sortable: false },
@@ -258,13 +257,6 @@ let prices = Vue.component('prices', {
                     ></v-text-field>
                   </template>
                 </v-slider>
-            </v-col>
-
-              <v-col cols="12" class="mt-n8 mb-n8">
-                <v-switch
-                    v-model="editedItem.is_default"
-                    label="¿Precio Predeterminado?"
-                ></v-switch>
             </v-col>
 
               </v-row>
