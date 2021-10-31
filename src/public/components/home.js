@@ -117,6 +117,7 @@ let home = Vue.component('home', {
 
 		closeWidgetInvoiceDialog: function() {
 			this.widget_invoice_dialog = false;
+			this.updateSales();
 		},
 
 		toClients: function() { this.$router.push('/clients'); },
@@ -132,7 +133,7 @@ let home = Vue.component('home', {
 
 				<v-col>
 				<v-card color="pink lighten-4">
-					<v-card-title>Vendido Hoy <v-btn class="ml-2" icon @click="updateSales"> <v-icon>mdi-refresh</v-icon> </v-btn></v-card-title>
+					<v-card-title class="text-h5">Vendido Hoy <v-btn class="ml-2" icon @click="updateSales"> <v-icon>mdi-refresh</v-icon> </v-btn></v-card-title>
 
 					<v-card-text class="text-h4">{{sold_today.sold + ' ' + sold_today.symbol}}</v-card-text>
 				</v-card>
@@ -140,7 +141,7 @@ let home = Vue.component('home', {
 
 				<v-col>
 				<v-card color="indigo lighten-4">
-					<v-card-title>Ventas ultimos 7 dias</v-card-title>
+					<v-card-title class="text-h5">Ventas ultimos 7 dias</v-card-title>
 					<v-card-text class="text-h4">{{sold_week.sold + ' ' + sold_week.symbol}}</v-card-text>
 				</v-card>
 				</v-col>
@@ -148,7 +149,7 @@ let home = Vue.component('home', {
 
 				<v-col>
 				<v-card color="teal lighten-4">
-					<v-card-title>Tasa del Dolar</v-card-title>
+					<v-card-title class="text-h5">Tasa del Dolar</v-card-title>
 					<v-text-field
 						class="ml-4 mr-4 mt-n2 text-h5"
 						v-model="exchange_rate"
@@ -175,7 +176,7 @@ let home = Vue.component('home', {
 
 
 			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="openWidgetInvoiceDialog">
-				<p class="title text-center"> Nueva venta</p>
+				<p class="text-h5 text-center"> Nueva venta</p>
 				<v-img
 				class="mx-auto"
 				height="100"
@@ -188,7 +189,7 @@ let home = Vue.component('home', {
 
 			<v-col>
 			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="toPurchases">
-			<p class="title text-center"> Ingresar Mercancia</p>
+			<p class="text-h5 text-center"> Ingresar Mercancia</p>
 				<v-img
 				class="mx-auto"
 				height="100"
@@ -200,7 +201,7 @@ let home = Vue.component('home', {
 
 			<v-col>
 			<v-card color="indigo lighten-4" class="pb-2" elevation="5" @click="toClients">
-			<p class="title text-center">Clientes</p>
+			<p class="text-h5 text-center">Clientes</p>
 				<v-img
 					class="mx-auto"
 					height="100"
