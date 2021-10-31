@@ -11,12 +11,6 @@ let costs = Vue.component('costs', {
     search: "",
     hidden: false,
     headers: [
-      {
-        text: 'ID',
-        align: 'start',
-        sortable: false,
-        value: 'id',
-      },
       { text: 'Nombre', value: 'full_name' },
       { text: 'Telefono', value: 'phone' },
       { text: 'RIF', value: 'rif' },
