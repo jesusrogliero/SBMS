@@ -167,15 +167,6 @@ let navigation = Vue.component('navigation', {
 
     </v-list>
 
-
-    <template v-slot:append>
-        <div class="pa-2">
-            <v-btn block color="primary">
-            Salir
-            </v-btn>
-        </div>
-    </template>
-
   </v-navigation-drawer>
 
   `
