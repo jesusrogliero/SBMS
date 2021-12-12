@@ -1,8 +1,12 @@
 {
   "name": "sistema_administrativo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sistema administrativo",
   "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/jesmirou/sbms.git"
+  },
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -28,13 +32,14 @@
   },
   "devDependencies": {
     "electron": "^13.4.0",
-    "electron-builder": "^22.11.7",
+    "electron-builder": "^22.13.1",
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.26.0"
   },
   "dependencies": {
     "electron-log": "^4.4.1",
     "sequelize": "^6.6.5",
-    "sqlite3": "^5.0.2"
+    "sqlite3": "^5.0.2",
+    "update-electron-app": "^2.0.1"
   }
 }
