@@ -1,9 +1,11 @@
 const { Sequelize } = require('sequelize');
+const appdata = require('appdata-path');
+const path = require('path');
 
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: 'data/data.db',
+  storage: path.join( appdata('sbms'), 'sbms.data'),
   logging: false
 });
 
