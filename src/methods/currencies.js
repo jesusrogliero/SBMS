@@ -124,7 +124,7 @@ const currencies = {
 			if( empty(currency) ) 
 				throw new Error('Debes crear moneda Dolar para establecer una tasa de cambio');
 			
-			if( currency.exchange_rate === 1)
+			if( currency.exchange_rate === 1 && currency.id === 1)
 				throw new Error("No es posible actualizar la tasa de cambio de la moneda predeterminada");
 
 			currency.exchange_rate = params.exchange_rate;
